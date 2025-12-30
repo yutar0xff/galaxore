@@ -211,32 +211,6 @@ export function HostBoard() {
                        </div>
                    );
                })}
-               {players.map((p, idx) => (
-                   <div key={p.id} className={`p-6 rounded-2xl transition-all ${
-                       idx === currentPlayerIndex
-                       ? 'bg-gradient-to-r from-yellow-900/80 to-gray-800 border-3 border-yellow-500 shadow-lg shadow-yellow-500/20'
-                       : 'bg-gray-800/60 border border-gray-700'
-                   }`}>
-                       <div className="flex justify-between items-center mb-4">
-                           <div className="font-bold text-2xl truncate flex-1">{p.name}</div>
-                           <div className="font-black text-4xl text-yellow-400">{p.score}</div>
-                       </div>
-                       <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
-                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Cards')}: <span className="text-white font-bold">{p.cards.length}</span></div>
-                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Res')}: <span className="text-white font-bold">{p.reserved.length}</span></div>
-                       </div>
-                       <div className="flex flex-wrap gap-3">
-                           {Object.entries(p.tokens).map(([color, count]) => (
-                               (count as number) > 0 && (
-                                   <div key={color} className="relative">
-                                       <div className={`w-8 h-8 rounded-full ${getColorBg(color as TokenColor)}`}></div>
-                                       <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-gray-900/80 rounded-full px-1">{count}</span>
-                                   </div>
-                               )
-                           ))}
-                       </div>
-                   </div>
-               ))}
            </div>
        </div>
     </div>
