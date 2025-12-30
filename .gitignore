@@ -29,6 +29,7 @@ pnpm-debug.log*
 *.sublime-project
 *.sublime-workspace
 .cursor
+plans/*
 
 # OS Files
 .DS_Store

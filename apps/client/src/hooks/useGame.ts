@@ -89,9 +89,13 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean 
     socketRef.current?.emit(EVENTS.START_GAME, { roomId });
   };
 
+  const resetGame = () => {
+    socketRef.current?.emit(EVENTS.RESET_GAME, { roomId });
+  };
+
   const sendAction = (action: Action) => {
     socketRef.current?.emit(EVENTS.GAME_ACTION, { roomId, action });
   };
 
-  return { gameState, error, isConnected, playerId, lobbyInfo, startGame, sendAction };
+  return { gameState, error, isConnected, playerId, lobbyInfo, startGame, resetGame, sendAction };
 };

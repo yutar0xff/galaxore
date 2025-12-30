@@ -6,13 +6,26 @@ import { Noble } from './ui/Noble';
 import { Token } from './ui/Token';
 import { GemColor, TokenColor } from '@local-splendor/shared';
 import { QRCodeSVG } from 'qrcode.react';
+import { useTranslation } from 'react-i18next';
 
 export function HostBoard() {
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get('roomId');
-  const { gameState, lobbyInfo, startGame } = useGame(roomId, { asSpectator: true });
+  const { gameState, lobbyInfo, startGame, resetGame } = useGame(roomId, { asSpectator: true });
   const [serverIp, setServerIp] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Prevent accidental navigation
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   useEffect(() => {
     // Fetch server IP address
@@ -33,13 +46,28 @@ export function HostBoard() {
     fetchServerIp();
   }, []);
 
-  // Use fetched IP if available, otherwise fallback to window.location
   const joinHost = serverIp || window.location.hostname;
   const joinUrl = roomId
       ? `${window.location.protocol}//${joinHost}:${window.location.port}/game?roomId=${roomId}`
       : '';
 
-  if (!roomId) return <div>Invalid Room ID</div>;
+  if (!roomId) return <div>{t('Invalid Room ID')}</div>;
+
+  const handleLeave = () => {
+      if (window.confirm(t('Are you sure you want to leave?'))) {
+          navigate('/');
+      }
+  };
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
+  const handleReset = () => {
+      if (window.confirm(t('Are you sure you want to reset the game?'))) {
+          resetGame();
+      }
+  };
 
   if (!gameState) {
     return (
@@ -84,50 +112,81 @@ export function HostBoard() {
   const { board, players, currentPlayerIndex } = gameState;
 
   return (
-    <div className="min-h-screen bg-gray-800 p-4 overflow-hidden flex flex-col">
-       {/* Top Bar: Nobles & Player Scores */}
-       <div className="flex justify-between items-start mb-4 h-24">
-         <div className="flex gap-2">
-            {board.nobles.map(noble => <Noble key={noble.id} noble={noble} />)}
-         </div>
-
-         <div className="flex gap-4">
-             {players.map((p, idx) => (
-                 <div key={p.id} className={`p-2 rounded w-48 ${idx === currentPlayerIndex ? 'bg-yellow-600 ring-2 ring-yellow-300' : 'bg-gray-700'}`}>
-                     <div className="font-bold flex justify-between">
-                         <span>{p.name}</span>
-                         <span>{p.score} VP</span>
-                     </div>
-                     <div className="text-xs flex gap-1 mt-1">
-                        Cards: {p.cards.length} | Res: {p.reserved.length}
-                     </div>
-                     <div className="flex gap-1 mt-1 flex-wrap">
-                         {Object.entries(p.tokens).map(([color, count]) => (
-                             (count as number) > 0 && <span key={color} className={`w-3 h-3 rounded-full ${getColorBg(color as TokenColor)}`}></span>
-                         ))}
-                     </div>
-                 </div>
-             ))}
-         </div>
+    <div className="min-h-screen bg-gray-900 p-6 overflow-hidden flex flex-col relative text-white text-xl">
+       {/* Top Controls */}
+       <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-6">
+              <span className="text-3xl font-bold">{t('Room')}: {roomId}</span>
+              <div className="flex items-center gap-6 bg-gray-800 px-6 py-4 rounded-2xl">
+                  <span className="text-xl text-gray-300 font-semibold">{t('Resources')}</span>
+                  <div className="flex gap-6">
+                      {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'] as TokenColor[]).map(color => (
+                          <Token key={color} color={color} count={board.tokens[color] || 0} size="xl" />
+                      ))}
+                  </div>
+              </div>
+          </div>
+          <div className="flex gap-4 items-center">
+              <button onClick={handleReset} className="bg-red-600/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-lg font-bold backdrop-blur">
+                  {t('Reset Game')}
+              </button>
+              <div className="flex bg-gray-800 rounded-lg text-lg">
+                   <button onClick={() => changeLanguage('en')} className={`px-4 py-2 rounded-lg ${i18n.language === 'en' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>EN</button>
+                   <button onClick={() => changeLanguage('ja')} className={`px-4 py-2 rounded-lg ${i18n.language === 'ja' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>JA</button>
+              </div>
+          </div>
        </div>
 
-       <div className="flex flex-1 gap-8">
-           {/* Left: Cards Board */}
-           <div className="flex-1 flex flex-col gap-4">
+       <div className="flex flex-1 gap-8 h-full">
+
+           {/* Left: Nobles */}
+           <div className="w-44 flex flex-col gap-5 justify-start py-4">
+               {board.nobles.map(noble => (
+                   <Noble key={noble.id} noble={noble} size="xl" />
+               ))}
+           </div>
+
+           {/* Center: Card Grid (3 rows: level 3,2,1) */}
+           <div className="flex-1 flex flex-col justify-start gap-5 py-2">
                {[3, 2, 1].map((level) => (
-                   <div key={level} className="flex gap-4 items-center">
-                       <CardBack level={level as 1|2|3} />
-                       {board.cards[level as 1|2|3].map(card => (
-                           <Card key={card.id} card={card} />
-                       ))}
+                   <div key={level} className="flex gap-5 items-center">
+                       <CardBack level={level as 1|2|3} size="xl" />
+                       <div className="flex gap-5">
+                           {board.cards[level as 1|2|3].map(card => (
+                               <Card key={card.id} card={card} size="xl" />
+                           ))}
+                       </div>
                    </div>
                ))}
            </div>
 
-           {/* Right: Tokens Supply */}
-           <div className="w-32 flex flex-col gap-4 justify-center items-center bg-gray-900/50 p-4 rounded-xl">
-               {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'] as TokenColor[]).map(color => (
-                   <Token key={color} color={color} count={board.tokens[color] || 0} size="lg" />
+           {/* Right: Players list */}
+           <div className="w-[420px] flex flex-col gap-5 h-full">
+               {players.map((p, idx) => (
+                   <div key={p.id} className={`p-6 rounded-2xl transition-all ${
+                       idx === currentPlayerIndex
+                       ? 'bg-gradient-to-r from-yellow-900/80 to-gray-800 border-3 border-yellow-500 shadow-lg shadow-yellow-500/20'
+                       : 'bg-gray-800/60 border border-gray-700'
+                   }`}>
+                       <div className="flex justify-between items-center mb-4">
+                           <div className="font-bold text-2xl truncate flex-1">{p.name}</div>
+                           <div className="font-black text-4xl text-yellow-400">{p.score}</div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
+                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Cards')}: <span className="text-white font-bold">{p.cards.length}</span></div>
+                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Res')}: <span className="text-white font-bold">{p.reserved.length}</span></div>
+                       </div>
+                       <div className="flex flex-wrap gap-3">
+                           {Object.entries(p.tokens).map(([color, count]) => (
+                               (count as number) > 0 && (
+                                   <div key={color} className="relative">
+                                       <div className={`w-8 h-8 rounded-full ${getColorBg(color as TokenColor)}`}></div>
+                                       <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-gray-900/80 rounded-full px-1">{count}</span>
+                                   </div>
+                               )
+                           ))}
+                       </div>
+                   </div>
                ))}
            </div>
        </div>
