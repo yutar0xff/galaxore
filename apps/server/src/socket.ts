@@ -68,6 +68,20 @@ export class SocketServer {
         this.broadcastState(roomId);
       });
 
+      socket.on(EVENTS.RESET_GAME, ({ roomId }: { roomId: string }) => {
+        const room = this.rooms.get(roomId);
+        if (!room) return;
+
+        // Only allow host (spectator) or players to reset?
+        // For local game, anyone in room can reset is probably fine or restrict to host.
+        // Assuming host is usually a spectator.
+
+        room.game = undefined;
+        // Optionally clear players or keep them in lobby?
+        // Let's keep them in lobby so they can restart easily.
+        this.broadcastState(roomId);
+      });
+
       socket.on(EVENTS.GAME_ACTION, ({ roomId, action }: { roomId: string, action: Action }) => {
         const room = this.rooms.get(roomId);
         if (!room || !room.game) return;
