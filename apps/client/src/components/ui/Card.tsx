@@ -25,6 +25,13 @@ const CARD_SIZES = {
   md: { card: 'w-24 h-32', points: 'text-xl', gem: 'w-6 h-6', costDot: 'w-4 h-4', padding: 'p-2', rowGap: 'gap-1', dotGap: 'gap-0.5' },
   lg: { card: 'w-32 h-44', points: 'text-2xl', gem: 'w-8 h-8', costDot: 'w-5 h-5', padding: 'p-3', rowGap: 'gap-1', dotGap: 'gap-1' },
   xl: { card: 'w-40 h-56', points: 'text-4xl', gem: 'w-10 h-10', costDot: 'w-6 h-6', padding: 'p-4', rowGap: 'gap-1.5', dotGap: 'gap-1' },
+type CardSize = 'sm' | 'md' | 'lg' | 'xl';
+
+const CARD_SIZES = {
+  sm: { card: 'w-20 h-28', points: 'text-lg', gem: 'w-5 h-5', cost: 'w-4 h-4 text-[9px]', padding: 'p-1.5', gap: 'gap-1' },
+  md: { card: 'w-24 h-32', points: 'text-xl', gem: 'w-6 h-6', cost: 'w-5 h-5 text-[10px]', padding: 'p-2', gap: 'gap-1' },
+  lg: { card: 'w-32 h-44', points: 'text-2xl', gem: 'w-8 h-8', cost: 'w-6 h-6 text-xs', padding: 'p-3', gap: 'gap-1.5' },
+  xl: { card: 'w-40 h-56', points: 'text-4xl', gem: 'w-10 h-10', cost: 'w-8 h-8 text-sm', padding: 'p-4', gap: 'gap-2' },
 };
 
 export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?: () => void; size?: CardSize }) {
@@ -38,6 +45,7 @@ export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?:
       <div className="flex justify-between items-start mb-2">
         <span className={clsx("font-bold text-black", s.points)}>{card.points > 0 ? card.points : ''}</span>
         <div className={clsx("rounded-sm border-2", s.gem, GEM_COLORS[card.gem], GEM_BORDER_COLORS[card.gem])}></div>
+        <div className={clsx("rounded-full border border-gray-300", s.gem, GEM_COLORS[card.gem])}></div>
       </div>
 
       {/* Image Placeholder */}
@@ -59,6 +67,12 @@ export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?:
                             )}
                         />
                     ))}
+      {/* Cost */}
+      <div className={clsx("flex flex-wrap content-end", s.gap)}>
+        {Object.entries(card.cost).map(([color, count]) => (
+            count > 0 && (
+                <div key={color} className={clsx("rounded-full flex items-center justify-center text-white font-bold border border-gray-400", s.cost, GEM_COLORS[color as GemColor])}>
+                    {count}
                 </div>
             )
         ))}

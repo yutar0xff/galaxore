@@ -165,6 +165,77 @@ export function PlayerController() {
       );
   };
 
+  const Dashboard = () => (
+      <div className="space-y-6">
+          {/* Status Header */}
+          <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
+              <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-2xl font-bold text-yellow-500">{player.score} {t('VP')}</h2>
+                  <div className="text-sm text-gray-400">
+                    Turn: {gameState.turn}
+                  </div>
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                  {/* Owned Tokens */}
+                  {Object.entries(player.tokens).map(([color, count]) => (
+                      (count as number) > 0 && <Token key={color} color={color as TokenColor} count={count as number} size="sm" />
+                  ))}
+                  {Object.keys(player.tokens).length === 0 && <span className="text-gray-500 text-xs">{t('No Tokens')}</span>}
+              </div>
+              <div className="flex gap-1 mt-2">
+                  {/* Bonuses */}
+                  {player.cards.map((c, i) => (
+                      <div key={i} className={`w-4 h-6 rounded-sm ${getGemBg(c.gem)}`} />
+                  ))}
+              </div>
+          </div>
+
+          {/* Action Menu */}
+          <div className="grid grid-cols-2 gap-4">
+              <button
+                  disabled={!isMyTurn}
+                  onClick={() => setCurrentView('TAKE_GEMS')}
+                  className="bg-blue-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
+              >
+                  <Gem size={32} />
+                  <span className="font-bold">{t('Take Tokens')}</span>
+              </button>
+
+              <button
+                  disabled={!isMyTurn}
+                  onClick={() => setCurrentView('BUY_CARD')}
+                  className="bg-green-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition"
+              >
+                  <ShoppingCart size={32} />
+                  <span className="font-bold">{t('Buy Card')}</span>
+              </button>
+
+              <button
+                  disabled={!isMyTurn}
+                  onClick={() => setCurrentView('RESERVE')}
+                  className="bg-yellow-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-700 transition"
+              >
+                  <Wallet size={32} />
+                  <span className="font-bold">{t('Reserve')}</span>
+              </button>
+
+              <button
+                  disabled={!isMyTurn}
+                  onClick={() => setCurrentView('BUY_RESERVED')}
+                  className="bg-purple-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition relative"
+              >
+                  <Hand size={32} />
+                  <span className="font-bold">{t('Buy Reserved')}</span>
+                  {player.reserved.length > 0 && (
+                      <span className="absolute top-2 right-2 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {player.reserved.length}
+                      </span>
+                  )}
+              </button>
+          </div>
+      </div>
+  );
+
   const TakeGemsView = () => (
       <div className="space-y-4">
           <div className="bg-gray-800 p-4 rounded-xl">
@@ -282,6 +353,30 @@ export function PlayerController() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-4 pb-40">
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col pb-20">
+      {/* App Header */}
+      <div className="bg-gray-800 p-4 sticky top-0 z-40 shadow-md flex items-center">
+         {currentView !== 'DASHBOARD' && (
+             <button onClick={() => {
+                 setCurrentView('DASHBOARD');
+                 setSelectedTokens([]);
+             }} className="mr-4 text-gray-300">
+                 <ArrowLeft size={24} />
+             </button>
+         )}
+         <div className="flex-1 text-center font-bold">
+            {isMyTurn ? <span className="text-green-400">{t('YOUR TURN')}</span> : <span className="text-gray-400">{t('Waiting for', { name: gameState.players[gameState.currentPlayerIndex].name })}</span>}
+         </div>
+      </div>
+
+      {error && (
+          <div className="bg-red-500 p-2 text-center text-white sticky top-16 z-50 animate-bounce">
+              {error}
+          </div>
+      )}
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto p-4">
          {currentView === 'DASHBOARD' && <Dashboard />}
          {currentView === 'TAKE_GEMS' && <TakeGemsView />}
          {currentView === 'BUY_CARD' && <BuyCardView />}

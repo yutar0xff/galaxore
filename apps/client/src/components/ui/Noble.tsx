@@ -25,6 +25,13 @@ const NOBLE_SIZES = {
   md: { container: 'w-20 h-24', points: 'text-lg', square: 'w-4 h-4', padding: 'p-1.5', rowGap: 'gap-1', dotGap: 'gap-0.5' },
   lg: { container: 'w-28 h-32', points: 'text-2xl', square: 'w-5 h-5', padding: 'p-2', rowGap: 'gap-1', dotGap: 'gap-1' },
   xl: { container: 'w-36 h-44', points: 'text-3xl', square: 'w-6 h-6', padding: 'p-3', rowGap: 'gap-1.5', dotGap: 'gap-1' },
+type NobleSize = 'sm' | 'md' | 'lg' | 'xl';
+
+const NOBLE_SIZES = {
+  sm: { container: 'w-16 h-16', points: 'text-base', req: 'w-6 h-3 text-[8px]', padding: 'p-1', gap: 'gap-1' },
+  md: { container: 'w-20 h-20', points: 'text-lg', req: 'w-8 h-4 text-[10px]', padding: 'p-1', gap: 'gap-1' },
+  lg: { container: 'w-28 h-28', points: 'text-2xl', req: 'w-10 h-5 text-xs', padding: 'p-2', gap: 'gap-1' },
+  xl: { container: 'w-36 h-36', points: 'text-3xl', req: 'w-12 h-6 text-sm', padding: 'p-3', gap: 'gap-1.5' },
 };
 
 export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSize }) {
@@ -47,6 +54,11 @@ export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSi
                            )}
                        />
                    ))}
+      <div className={clsx("flex flex-col", s.gap)}>
+        {Object.entries(noble.requirements).map(([color, count]) => (
+           count > 0 && (
+               <div key={color} className={clsx("rounded flex items-center justify-center text-white font-bold border border-gray-400", s.req, GEM_COLORS[color as GemColor])}>
+                   {count}
                </div>
            )
         ))}
