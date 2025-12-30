@@ -112,93 +112,82 @@ export function HostBoard() {
   const { board, players, currentPlayerIndex } = gameState;
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6 overflow-hidden flex flex-col relative text-white">
-       {/* Controls */}
-       <div className="absolute top-4 right-4 flex gap-4 z-50">
-           <button onClick={handleReset} className="bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 rounded text-sm font-bold backdrop-blur">
-               {t('Reset Game')}
-           </button>
-           <div className="flex bg-gray-800 rounded">
-                <button onClick={() => changeLanguage('en')} className={`px-3 py-1 rounded ${i18n.language === 'en' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>EN</button>
-                <button onClick={() => changeLanguage('ja')} className={`px-3 py-1 rounded ${i18n.language === 'ja' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>JA</button>
-           </div>
+    <div className="min-h-screen bg-gray-900 p-6 overflow-hidden flex flex-col relative text-white text-xl">
+       {/* Top Controls */}
+       <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center gap-6">
+              <span className="text-3xl font-bold">{t('Room')}: {roomId}</span>
+              <div className="flex items-center gap-6 bg-gray-800 px-6 py-4 rounded-2xl">
+                  <span className="text-xl text-gray-300 font-semibold">{t('Resources')}</span>
+                  <div className="flex gap-6">
+                      {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'] as TokenColor[]).map(color => (
+                          <Token key={color} color={color} count={board.tokens[color] || 0} size="xl" />
+                      ))}
+                  </div>
+              </div>
+          </div>
+          <div className="flex gap-4 items-center">
+              <button onClick={handleReset} className="bg-red-600/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-lg font-bold backdrop-blur">
+                  {t('Reset Game')}
+              </button>
+              <div className="flex bg-gray-800 rounded-lg text-lg">
+                   <button onClick={() => changeLanguage('en')} className={`px-4 py-2 rounded-lg ${i18n.language === 'en' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>EN</button>
+                   <button onClick={() => changeLanguage('ja')} className={`px-4 py-2 rounded-lg ${i18n.language === 'ja' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>JA</button>
+              </div>
+          </div>
        </div>
 
-       <div className="flex flex-1 gap-6 h-full">
+       <div className="flex flex-1 gap-8 h-full">
 
-           {/* Left Area: Nobles (Vertical) */}
-           <div className="w-24 flex flex-col gap-4 justify-center py-8">
+           {/* Left: Nobles */}
+           <div className="w-44 flex flex-col gap-5 justify-start py-4">
                {board.nobles.map(noble => (
-                   <div key={noble.id} className="transform scale-125 origin-left mb-4">
-                       <Noble noble={noble} />
-                   </div>
+                   <Noble key={noble.id} noble={noble} size="xl" />
                ))}
            </div>
 
-           {/* Center Area: Card Pyramid */}
-           <div className="flex-1 flex flex-col justify-center gap-8 py-8 pr-8">
+           {/* Center: Card Grid (3 rows: level 3,2,1) */}
+           <div className="flex-1 flex flex-col justify-start gap-5 py-2">
                {[3, 2, 1].map((level) => (
-                   <div key={level} className="flex gap-6 items-center">
-                       <div className="transform scale-125 origin-right mr-4">
-                           <CardBack level={level as 1|2|3} />
-                       </div>
-                       <div className="flex gap-6">
+                   <div key={level} className="flex gap-5 items-center">
+                       <CardBack level={level as 1|2|3} size="xl" />
+                       <div className="flex gap-5">
                            {board.cards[level as 1|2|3].map(card => (
-                               <div key={card.id} className="transform scale-125">
-                                   <Card card={card} />
-                               </div>
+                               <Card key={card.id} card={card} size="xl" />
                            ))}
                        </div>
                    </div>
                ))}
            </div>
 
-           {/* Right Area: Info & Tokens */}
-           <div className="w-80 flex flex-col gap-6 h-full">
-
-               {/* Token Bank */}
-               <div className="bg-gray-800/80 p-6 rounded-2xl flex flex-col items-center justify-center gap-4 flex-none">
-                   <h3 className="text-gray-400 font-bold uppercase tracking-wider">{t('Resources')}</h3>
-                   <div className="grid grid-cols-3 gap-4">
-                       {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'] as TokenColor[]).map(color => (
-                           <Token key={color} color={color} count={board.tokens[color] || 0} size="lg" />
-                       ))}
-                   </div>
-               </div>
-
-               {/* Player List */}
-               <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2">
-                   {players.map((p, idx) => (
-                       <div key={p.id} className={`p-4 rounded-xl transition-all ${
-                           idx === currentPlayerIndex
-                           ? 'bg-gradient-to-r from-yellow-900/80 to-gray-800 border-2 border-yellow-500 shadow-lg shadow-yellow-500/20'
-                           : 'bg-gray-800/60 border border-gray-700'
-                       }`}>
-                           <div className="flex justify-between items-center mb-2">
-                               <div className="font-bold text-lg truncate flex-1">{p.name}</div>
-                               <div className="font-black text-2xl text-yellow-500">{p.score}</div>
-                           </div>
-
-                           {/* Stats Grid */}
-                           <div className="grid grid-cols-2 gap-2 text-sm text-gray-400 mb-3 bg-black/20 p-2 rounded">
-                               <div>{t('Cards')}: <span className="text-white font-bold">{p.cards.length}</span></div>
-                               <div>{t('Res')}: <span className="text-white font-bold">{p.reserved.length}</span></div>
-                           </div>
-
-                           {/* Tokens Mini View */}
-                           <div className="flex flex-wrap gap-1.5">
-                               {Object.entries(p.tokens).map(([color, count]) => (
-                                   (count as number) > 0 && (
-                                       <div key={color} className="relative">
-                                           <div className={`w-4 h-4 rounded-full ${getColorBg(color as TokenColor)}`}></div>
-                                           <span className="absolute -top-2 -right-1 text-[10px] font-bold text-white drop-shadow-md">{count}</span>
-                                       </div>
-                                   )
-                               ))}
-                           </div>
+           {/* Right: Players list */}
+           <div className="w-[420px] flex flex-col gap-5 h-full">
+               {players.map((p, idx) => (
+                   <div key={p.id} className={`p-6 rounded-2xl transition-all ${
+                       idx === currentPlayerIndex
+                       ? 'bg-gradient-to-r from-yellow-900/80 to-gray-800 border-3 border-yellow-500 shadow-lg shadow-yellow-500/20'
+                       : 'bg-gray-800/60 border border-gray-700'
+                   }`}>
+                       <div className="flex justify-between items-center mb-4">
+                           <div className="font-bold text-2xl truncate flex-1">{p.name}</div>
+                           <div className="font-black text-4xl text-yellow-400">{p.score}</div>
                        </div>
-                   ))}
-               </div>
+                       <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
+                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Cards')}: <span className="text-white font-bold">{p.cards.length}</span></div>
+                           <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Res')}: <span className="text-white font-bold">{p.reserved.length}</span></div>
+                       </div>
+                       <div className="flex flex-wrap gap-3">
+                           {Object.entries(p.tokens).map(([color, count]) => (
+                               (count as number) > 0 && (
+                                   <div key={color} className="relative">
+                                       <div className={`w-8 h-8 rounded-full ${getColorBg(color as TokenColor)}`}></div>
+                                       <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-gray-900/80 rounded-full px-1">{count}</span>
+                                   </div>
+                               )
+                           ))}
+                       </div>
+                   </div>
+               ))}
            </div>
        </div>
     </div>

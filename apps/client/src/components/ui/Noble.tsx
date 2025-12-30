@@ -10,14 +10,24 @@ const GEM_COLORS: Record<GemColor, string> = {
   onyx: 'bg-gray-800',
 };
 
-export function Noble({ noble }: { noble: NobleType }) {
+type NobleSize = 'sm' | 'md' | 'lg' | 'xl';
+
+const NOBLE_SIZES = {
+  sm: { container: 'w-16 h-16', points: 'text-base', req: 'w-6 h-3 text-[8px]', padding: 'p-1', gap: 'gap-1' },
+  md: { container: 'w-20 h-20', points: 'text-lg', req: 'w-8 h-4 text-[10px]', padding: 'p-1', gap: 'gap-1' },
+  lg: { container: 'w-28 h-28', points: 'text-2xl', req: 'w-10 h-5 text-xs', padding: 'p-2', gap: 'gap-1' },
+  xl: { container: 'w-36 h-36', points: 'text-3xl', req: 'w-12 h-6 text-sm', padding: 'p-3', gap: 'gap-1.5' },
+};
+
+export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSize }) {
+  const s = NOBLE_SIZES[size];
   return (
-    <div className="w-20 h-20 bg-amber-100 rounded border-2 border-amber-300 flex flex-col p-1 shadow-md">
-      <span className="font-bold text-lg text-black self-center mb-1">{noble.points}</span>
-      <div className="flex flex-col gap-1">
+    <div className={clsx(s.container, s.padding, "bg-amber-100 rounded-lg border-2 border-amber-300 flex flex-col shadow-md")}>
+      <span className={clsx("font-bold text-black self-center mb-1", s.points)}>{noble.points}</span>
+      <div className={clsx("flex flex-col", s.gap)}>
         {Object.entries(noble.requirements).map(([color, count]) => (
            count > 0 && (
-               <div key={color} className={clsx("w-8 h-4 rounded text-[10px] flex items-center justify-center text-white font-bold border border-gray-400", GEM_COLORS[color as GemColor])}>
+               <div key={color} className={clsx("rounded flex items-center justify-center text-white font-bold border border-gray-400", s.req, GEM_COLORS[color as GemColor])}>
                    {count}
                </div>
            )
