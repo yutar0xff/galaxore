@@ -59,6 +59,10 @@ const resources = {
       "Bonus": "Bonus",
       "Hand": "Hand",
       "Resources": "Resources",
+      "Owned Gems": "Owned Gems",
+      "Score": "Score",
+      "Take": "Take",
+      "No Gems": "No Gems",
     }
   },
   ja: {
@@ -117,6 +121,10 @@ const resources = {
       "Bonus": "ボーナス",
       "Hand": "手札",
       "Resources": "リソース",
+      "Owned Gems": "所持する宝石",
+      "Score": "スコア",
+      "Take": "取得",
+      "No Gems": "宝石なし",
     }
   }
 };

@@ -89,76 +89,81 @@ export function PlayerController() {
 
   // --- Sub Views ---
 
-  const Dashboard = () => (
-      <div className="space-y-6">
-          {/* Status Header */}
-          <div className="bg-gray-800 p-4 rounded-xl shadow-lg">
-              <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-2xl font-bold text-yellow-500">{player.score} {t('VP')}</h2>
-                  <div className="text-sm text-gray-400">
-                    Turn: {gameState.turn}
-                  </div>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                  {/* Owned Tokens */}
-                  {Object.entries(player.tokens).map(([color, count]) => (
-                      (count as number) > 0 && <Token key={color} color={color as TokenColor} count={count as number} size="sm" />
-                  ))}
-                  {Object.keys(player.tokens).length === 0 && <span className="text-gray-500 text-xs">{t('No Tokens')}</span>}
-              </div>
-              <div className="flex gap-1 mt-2">
-                  {/* Bonuses */}
-                  {player.cards.map((c, i) => (
-                      <div key={i} className={`w-4 h-6 rounded-sm ${getGemBg(c.gem)}`} />
-                  ))}
-              </div>
+  const Dashboard = () => {
+      // Count tokens and bonuses by color
+      const tokenCounts: Record<string, number> = {};
+      Object.entries(player.tokens).forEach(([color, count]) => {
+          if ((count as number) > 0) tokenCounts[color] = count as number;
+      });
+
+      const bonusCounts: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+      player.cards.forEach(card => { bonusCounts[card.gem]++; });
+
+      const allGemColors: GemColor[] = ['ruby', 'sapphire', 'emerald', 'diamond', 'onyx'];
+      const hasAnyGems = allGemColors.some(c => (bonusCounts[c] > 0) || (tokenCounts[c] > 0)) || (tokenCounts['gold'] > 0);
+
+      return (
+      <div className="flex flex-col h-full">
+          {/* Header: Player name and score */}
+          <div className="flex justify-between items-center mb-4 px-2">
+              <span className="text-xl font-bold">{player.name}</span>
+              <span className="text-xl font-bold text-yellow-500">{t('Score')}: {player.score}</span>
           </div>
 
-          {/* Action Menu */}
-          <div className="grid grid-cols-2 gap-4">
-              <button
-                  disabled={!isMyTurn}
-                  onClick={() => setCurrentView('TAKE_GEMS')}
-                  className="bg-blue-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
-              >
-                  <Gem size={32} />
-                  <span className="font-bold">{t('Take Tokens')}</span>
-              </button>
+          {/* Owned Gems Section - columns by color */}
+          <div className="flex-1 px-2">
+              <h3 className="text-base text-gray-400 font-semibold mb-4 uppercase tracking-wide">{t('Owned Gems')}</h3>
+              <div className="flex gap-4 justify-start flex-wrap">
+                  {/* Each color column: squares (bonuses) on top, circles (tokens) below */}
+                  {allGemColors.map(color => {
+                      const bonus = bonusCounts[color] || 0;
+                      const token = tokenCounts[color] || 0;
+                      if (bonus === 0 && token === 0) return null;
 
-              <button
-                  disabled={!isMyTurn}
-                  onClick={() => setCurrentView('BUY_CARD')}
-                  className="bg-green-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-green-700 transition"
-              >
-                  <ShoppingCart size={32} />
-                  <span className="font-bold">{t('Buy Card')}</span>
-              </button>
-
-              <button
-                  disabled={!isMyTurn}
-                  onClick={() => setCurrentView('RESERVE')}
-                  className="bg-yellow-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-yellow-700 transition"
-              >
-                  <Wallet size={32} />
-                  <span className="font-bold">{t('Reserve')}</span>
-              </button>
-
-              <button
-                  disabled={!isMyTurn}
-                  onClick={() => setCurrentView('BUY_RESERVED')}
-                  className="bg-purple-600 p-4 rounded-xl flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition relative"
-              >
-                  <Hand size={32} />
-                  <span className="font-bold">{t('Buy Reserved')}</span>
-                  {player.reserved.length > 0 && (
-                      <span className="absolute top-2 right-2 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {player.reserved.length}
-                      </span>
+                      return (
+                          <div key={color} className="flex flex-col gap-2 items-center">
+                              {/* Bonuses - squares */}
+                              {Array.from({ length: bonus }).map((_, i) => (
+                                  <div
+                                      key={`b-${i}`}
+                                      className={clsx(
+                                          "w-14 h-14 rounded-md border-3",
+                                          getGemBg(color),
+                                          getGemBorder(color)
+                                      )}
+                                  />
+                              ))}
+                              {/* Tokens - circles */}
+                              {Array.from({ length: token }).map((_, i) => (
+                                  <div
+                                      key={`t-${i}`}
+                                      className={clsx(
+                                          "w-14 h-14 rounded-full border-3",
+                                          getGemBg(color),
+                                          getGemBorder(color)
+                                      )}
+                                  />
+                              ))}
+                          </div>
+                      );
+                  })}
+                  {/* Gold tokens column */}
+                  {(tokenCounts['gold'] || 0) > 0 && (
+                      <div className="flex flex-col gap-2 items-center">
+                          {Array.from({ length: tokenCounts['gold'] }).map((_, i) => (
+                              <div
+                                  key={`gold-${i}`}
+                                  className="w-14 h-14 rounded-full border-3 bg-yellow-400 border-yellow-600"
+                              />
+                          ))}
+                      </div>
                   )}
-              </button>
+              </div>
+              {!hasAnyGems && <span className="text-gray-500 text-lg">{t('No Gems')}</span>}
           </div>
       </div>
-  );
+      );
+  };
 
   const TakeGemsView = () => (
       <div className="space-y-4">
@@ -250,46 +255,124 @@ export function PlayerController() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col pb-20">
-      {/* App Header */}
-      <div className="bg-gray-800 p-4 sticky top-0 z-40 shadow-md flex items-center">
-         {currentView !== 'DASHBOARD' && (
-             <button onClick={() => {
-                 setCurrentView('DASHBOARD');
-                 setSelectedTokens([]);
-             }} className="mr-4 text-gray-300">
-                 <ArrowLeft size={24} />
-             </button>
-         )}
-         <div className="flex-1 text-center font-bold">
-            {isMyTurn ? <span className="text-green-400">{t('YOUR TURN')}</span> : <span className="text-gray-400">{t('Waiting for', { name: gameState.players[gameState.currentPlayerIndex].name })}</span>}
-         </div>
-      </div>
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      {/* App Header - only show back button when not on dashboard */}
+      {currentView !== 'DASHBOARD' && (
+          <div className="bg-gray-800 p-4 shadow-md flex items-center">
+              <button onClick={() => {
+                  setCurrentView('DASHBOARD');
+                  setSelectedTokens([]);
+              }} className="mr-4 text-gray-300">
+                  <ArrowLeft size={24} />
+              </button>
+             <div className="flex-1 text-center font-bold">
+                {currentView === 'TAKE_GEMS' && t('Take Tokens')}
+                {currentView === 'BUY_CARD' && t('Buy Card')}
+                {currentView === 'RESERVE' && t('Reserve')}
+                {currentView === 'BUY_RESERVED' && t('Buy Reserved')}
+             </div>
+          </div>
+      )}
 
       {error && (
-          <div className="bg-red-500 p-2 text-center text-white sticky top-16 z-50 animate-bounce">
+          <div className="bg-red-500 p-2 text-center text-white animate-bounce">
               {error}
           </div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-40">
          {currentView === 'DASHBOARD' && <Dashboard />}
          {currentView === 'TAKE_GEMS' && <TakeGemsView />}
          {currentView === 'BUY_CARD' && <BuyCardView />}
          {currentView === 'RESERVE' && <ReserveView />}
          {currentView === 'BUY_RESERVED' && <BuyReservedView />}
       </div>
+
+      {/* Turn indicator + Fixed Bottom Action Bar (only on dashboard) */}
+      {currentView === 'DASHBOARD' && (
+          <div className="fixed bottom-0 left-0 right-0 z-50">
+              {/* Turn Indicator */}
+              <div className={clsx(
+                  "text-center py-3 font-bold text-lg border-t",
+                  isMyTurn
+                      ? "bg-green-600 text-white border-green-500"
+                      : "bg-gray-700 text-gray-300 border-gray-600"
+              )}>
+                  {isMyTurn
+                      ? t('YOUR TURN')
+                      : t('Waiting for', { name: gameState.players[gameState.currentPlayerIndex].name })}
+              </div>
+
+              {/* Action Buttons - 4 in a row */}
+              <div className="bg-gray-800 border-t border-gray-700 p-2 flex gap-2">
+                  <button
+                      disabled={!isMyTurn}
+                      onClick={() => setCurrentView('TAKE_GEMS')}
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                  >
+                      <Gem size={28} />
+                      <span className="text-[10px] font-bold">{t('Take')}</span>
+                  </button>
+
+                  <button
+                      disabled={!isMyTurn}
+                      onClick={() => setCurrentView('BUY_CARD')}
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                  >
+                      <ShoppingCart size={28} />
+                      <span className="text-[10px] font-bold">{t('Buy')}</span>
+                  </button>
+
+                  <button
+                      disabled={!isMyTurn}
+                      onClick={() => setCurrentView('RESERVE')}
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                  >
+                      <Wallet size={28} />
+                      <span className="text-[10px] font-bold">{t('Reserve')}</span>
+                  </button>
+
+                  <button
+                      disabled={!isMyTurn}
+                      onClick={() => setCurrentView('BUY_RESERVED')}
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600 relative"
+                  >
+                      <Hand size={28} />
+                      <span className="text-[10px] font-bold">{t('Reserved')}</span>
+                      {player.reserved.length > 0 && (
+                          <span className="absolute top-1 right-1 bg-red-500 text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                              {player.reserved.length}
+                          </span>
+                      )}
+                  </button>
+              </div>
+          </div>
+      )}
     </div>
   );
 }
 
-function getGemBg(color: GemColor) {
+function getGemBg(color: GemColor | string) {
      switch(color) {
         case 'emerald': return 'bg-green-500';
         case 'sapphire': return 'bg-blue-500';
         case 'ruby': return 'bg-red-500';
         case 'diamond': return 'bg-gray-100';
         case 'onyx': return 'bg-gray-800';
+        case 'gold': return 'bg-yellow-400';
+        default: return 'bg-gray-500';
+    }
+}
+
+function getGemBorder(color: GemColor | string) {
+     switch(color) {
+        case 'emerald': return 'border-green-700';
+        case 'sapphire': return 'border-blue-700';
+        case 'ruby': return 'border-red-700';
+        case 'diamond': return 'border-gray-400';
+        case 'onyx': return 'border-gray-600';
+        case 'gold': return 'border-yellow-600';
+        default: return 'border-gray-500';
     }
 }
