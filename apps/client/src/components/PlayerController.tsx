@@ -17,13 +17,18 @@ const GEM_BORDER_COLORS: Record<GemColor | 'gold', string> = {
   gold: 'border-yellow-600',
 };
 
-type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE' | 'BUY_RESERVED';
+type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE';
 
 export function PlayerController() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get('roomId');
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('i18nextLng', lng);
+  };
 
   const handleGameReset = () => {
     alert(t('Game has been reset by host'));
@@ -66,7 +71,7 @@ export function PlayerController() {
   const player = gameState.players.find(p => p.id === playerId);
   const isMyTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
 
-  if (!player) return <div className="text-white p-4">Player not found</div>;
+  if (!player) return <div className="text-white p-4">{t('Player not found')}</div>;
 
   // --- Handlers ---
 
@@ -185,7 +190,13 @@ export function PlayerController() {
           {/* Header: Player name and score */}
           <div className="flex justify-between items-center mb-4 px-2">
               <span className="text-xl font-bold">{player.name}</span>
-              <span className="text-xl font-bold text-yellow-500">{t('Score')}: {player.score}</span>
+              <div className="flex items-center gap-4">
+                  <div className="flex bg-gray-800 rounded border border-gray-700 p-0.5">
+                      <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs rounded transition-all ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>EN</button>
+                      <button onClick={() => changeLanguage('ja')} className={`px-2 py-1 text-xs rounded transition-all ${i18n.language === 'ja' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>JA</button>
+                  </div>
+                  <span className="text-xl font-bold text-yellow-500">{t('Score')}: {player.score}</span>
+              </div>
           </div>
 
           {/* Owned Gems Section - columns by color */}
@@ -291,6 +302,23 @@ export function PlayerController() {
   const BuyCardView = () => (
       <div className="space-y-4">
           <ResourcesHeader />
+
+          {/* Reserved Cards Section */}
+          {player.reserved.length > 0 && (
+              <div className="border-b border-gray-700 pb-6 mb-2">
+                  <h3 className="mb-3 font-bold text-yellow-500 pl-2 border-l-4 border-yellow-500">{t('Reserved Cards')}</h3>
+                  <div className="flex overflow-x-auto gap-4 pb-2 snap-x px-2">
+                     {player.reserved.map(card => (
+                         <div key={card.id} className="flex-shrink-0 snap-center">
+                             <Card card={card} onClick={() => {
+                                 if(window.confirm(t('Buy this reserved card?'))) submitBuy(card);
+                             }} />
+                         </div>
+                     ))}
+                  </div>
+              </div>
+          )}
+
           {[1, 2, 3].map(level => (
             <div key={level}>
                 <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
@@ -329,20 +357,6 @@ export function PlayerController() {
       </div>
   );
 
-  const BuyReservedView = () => (
-      <div className="space-y-4">
-          <ResourcesHeader />
-          <div className="flex flex-wrap gap-4 justify-center">
-             {player.reserved.map(card => (
-                 <Card key={card.id} card={card} onClick={() => {
-                     if(window.confirm(t('Buy this reserved card?'))) submitBuy(card);
-                 }} />
-             ))}
-             {player.reserved.length === 0 && <div className="text-gray-500 py-8">{t('No reserved cards')}</div>}
-          </div>
-      </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* App Header - only show back button when not on dashboard */}
@@ -358,7 +372,6 @@ export function PlayerController() {
                 {currentView === 'TAKE_GEMS' && t('Take Tokens')}
                 {currentView === 'BUY_CARD' && t('Buy Card')}
                 {currentView === 'RESERVE' && t('Reserve')}
-                {currentView === 'BUY_RESERVED' && t('Buy Reserved')}
              </div>
           </div>
       )}
@@ -375,7 +388,6 @@ export function PlayerController() {
          {currentView === 'TAKE_GEMS' && <TakeGemsView />}
          {currentView === 'BUY_CARD' && <BuyCardView />}
          {currentView === 'RESERVE' && <ReserveView />}
-         {currentView === 'BUY_RESERVED' && <BuyReservedView />}
       </div>
 
       {/* Turn indicator + Fixed Bottom Action Bar (only on dashboard) */}
@@ -420,20 +432,6 @@ export function PlayerController() {
                   >
                       <Wallet size={28} />
                       <span className="text-[10px] font-bold">{t('Reserve')}</span>
-                  </button>
-
-                  <button
-                      disabled={!isMyTurn}
-                      onClick={() => setCurrentView('BUY_RESERVED')}
-                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600 relative"
-                  >
-                      <Hand size={28} />
-                      <span className="text-[10px] font-bold">{t('Reserved')}</span>
-                      {player.reserved.length > 0 && (
-                          <span className="absolute top-1 right-1 bg-red-500 text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold">
-                              {player.reserved.length}
-                          </span>
-                      )}
                   </button>
               </div>
           </div>

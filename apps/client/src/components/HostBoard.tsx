@@ -81,39 +81,39 @@ export function HostBoard() {
   if (!gameState) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white gap-8 relative">
-        <button
-            onClick={() => navigate('/')}
-            className="absolute top-4 left-4 text-gray-400 hover:text-white flex items-center gap-2"
-        >
-            ← Back to Home
-        </button>
+                <button
+                    onClick={() => navigate('/')}
+                    className="absolute top-4 left-4 text-gray-400 hover:text-white flex items-center gap-2"
+                >
+                    ← {t('Back to Home')}
+                </button>
 
-        <h1 className="text-4xl">Room: {roomId}</h1>
+                <h1 className="text-4xl">{t('Room')}: {roomId}</h1>
 
-        <div className="bg-white p-4 rounded-xl">
-            {joinUrl && <QRCodeSVG value={joinUrl} size={256} />}
-        </div>
-        <p className="text-gray-400">Scan to Join</p>
-        <p className="text-sm text-gray-500">{joinUrl}</p>
+                <div className="bg-white p-4 rounded-xl">
+                    {joinUrl && <QRCodeSVG value={joinUrl} size={256} />}
+                </div>
+                <p className="text-gray-400">{t('Scan to Join')}</p>
+                <p className="text-sm text-gray-500">{joinUrl}</p>
 
-        <div className="text-2xl mt-4">
-          Players: {lobbyInfo?.players || 0} / 4
-        </div>
-        <div className="text-xl text-gray-400">
-          Spectators: {lobbyInfo?.spectators || 0}
-        </div>
+                <div className="text-2xl mt-4">
+                  {t('Players')}: {lobbyInfo?.players || 0} / 4
+                </div>
+                <div className="text-xl text-gray-400">
+                  {t('Spectators')}: {lobbyInfo?.spectators || 0}
+                </div>
 
-        {(lobbyInfo?.players || 0) >= 2 && (
-            <button
-                onClick={startGame}
-                className="px-8 py-4 bg-green-600 rounded text-2xl font-bold hover:bg-green-700 animate-pulse mt-4"
-            >
-                Start Game
-            </button>
-        )}
-        {(lobbyInfo?.players || 0) < 2 && (
-            <div className="text-yellow-500 mt-4">Waiting for players...</div>
-        )}
+                {(lobbyInfo?.players || 0) >= 2 && (
+                    <button
+                        onClick={startGame}
+                        className="px-8 py-4 bg-green-600 rounded text-2xl font-bold hover:bg-green-700 animate-pulse mt-4"
+                    >
+                        {t('Start Game')}
+                    </button>
+                )}
+                {(lobbyInfo?.players || 0) < 2 && (
+                    <div className="text-yellow-500 mt-4">{t('Waiting for players...')}</div>
+                )}
       </div>
     );
   }
@@ -183,11 +183,15 @@ export function HostBoard() {
                    <div className="w-[520px] flex flex-col gap-5 h-full">
                {players.map((p, idx) => {
                    // Count card bonuses by gem color
-                   const bonuses: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
-                   p.cards.forEach(card => { bonuses[card.gem]++; });
+                           const bonuses: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+                           p.cards.forEach(card => { bonuses[card.gem]++; });
 
-                   return (
-                       <div key={p.id} className={`p-6 rounded-2xl transition-all duration-300 border-2 ${
+                           // Calculate nobles visited: (Total Score - Card Points) / 3
+                           const cardPoints = p.cards.reduce((sum, c) => sum + c.points, 0);
+                           const noblesVisited = Math.max(0, (p.score - cardPoints) / 3);
+
+                           return (
+                               <div key={p.id} className={`p-6 rounded-2xl transition-all duration-300 border-2 ${
                            idx === currentPlayerIndex
                            ? 'bg-gradient-to-br from-amber-900/90 to-slate-900/90 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] scale-105 z-10'
                            : 'bg-slate-800/60 border-slate-700 hover:bg-slate-800/80'
@@ -196,16 +200,16 @@ export function HostBoard() {
                                <div className={clsx("font-serif text-2xl truncate flex-1 tracking-wide", idx === currentPlayerIndex ? "text-amber-100 font-bold" : "text-slate-300")}>{p.name}</div>
                                <div className="font-serif font-black text-4xl text-amber-400 drop-shadow-md">{p.score}</div>
                            </div>
-                           <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
-                               <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
-                                   <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Cards')}</span>
-                                   <span className="text-white font-bold">{p.cards.length}</span>
-                               </div>
-                               <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
-                                   <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Res')}</span>
-                                   <span className="text-white font-bold">{p.reserved.length}</span>
-                               </div>
-                           </div>
+                                   <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
+                                       <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
+                                           <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Res')}</span>
+                                           <span className="text-white font-bold">{p.reserved.length}</span>
+                                       </div>
+                                       <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
+                                           <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Nobles')}</span>
+                                           <span className="text-white font-bold">{noblesVisited}</span>
+                                       </div>
+                                   </div>
                            {/* Tokens (circles) and Bonuses (squares) */}
                            <div className="flex gap-6">
                                {/* Tokens - circles */}
