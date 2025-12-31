@@ -134,7 +134,7 @@ export class SocketServer {
               room.game.reserveCard(userId, action.payload.cardId);
               break;
             case 'BUY_CARD':
-              room.game.buyCard(userId, action.payload.cardId);
+              room.game.buyCard(userId, action.payload.cardId, action.payload.payment);
               break;
           }
           this.broadcastState(roomId);

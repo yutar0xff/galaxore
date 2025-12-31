@@ -130,7 +130,7 @@ export class SplendorGame {
     this.endTurn();
   }
 
-  public buyCard(playerId: string, cardId: string) {
+  public buyCard(playerId: string, cardId: string, paymentDetails?: Record<string, number>) {
     this.validateTurn(playerId);
     const player = this.getPlayer(playerId);
 
@@ -148,32 +148,61 @@ export class SplendorGame {
 
     const cost = card.cost;
     const discount = this.getPlayerDiscount(player);
-    let goldNeeded = 0;
     const payment: { [key in TokenColor]?: number } = {};
 
-    for (const color of GEM_COLORS) {
-      if (color === 'gold') continue;
-      const req = Math.max(0, (cost[color] || 0) - (discount[color] || 0));
-      const available = player.tokens[color] || 0;
+    if (paymentDetails) {
+        // Validate provided payment
+        let goldNeededForDeficit = 0;
 
-      if (available >= req) {
-        payment[color] = req;
-      } else {
-        payment[color] = available;
-        goldNeeded += (req - available);
-      }
+        // Check player has enough tokens
+        for (const [color, amount] of Object.entries(paymentDetails)) {
+            if ((player.tokens[color as TokenColor] || 0) < amount) {
+                throw new Error(`Not enough ${color} tokens`);
+            }
+        }
+
+        for (const color of GEM_COLORS) {
+            if (color === 'gold') continue;
+            const req = Math.max(0, (cost[color] || 0) - (discount[color] || 0));
+            const paid = paymentDetails[color] || 0;
+
+            if (paid > req) throw new Error(`Overpayment for ${color}`);
+
+            payment[color] = paid;
+            goldNeededForDeficit += (req - paid);
+        }
+
+        const goldPaid = paymentDetails['gold'] || 0;
+        if (goldPaid < goldNeededForDeficit) throw new Error("Insufficient payment (gold)");
+        if (goldPaid > goldNeededForDeficit) throw new Error("Overpayment (gold)");
+
+        payment['gold'] = goldPaid;
+
+    } else {
+        // Default auto-calculation
+        let goldNeeded = 0;
+        for (const color of GEM_COLORS) {
+          if (color === 'gold') continue;
+          const req = Math.max(0, (cost[color] || 0) - (discount[color] || 0));
+          const available = player.tokens[color] || 0;
+
+          if (available >= req) {
+            payment[color] = req;
+          } else {
+            payment[color] = available;
+            goldNeeded += (req - available);
+          }
+        }
+
+        if ((player.tokens.gold || 0) < goldNeeded) throw new Error("Not enough resources");
+        payment['gold'] = goldNeeded;
     }
-
-    if ((player.tokens.gold || 0) < goldNeeded) throw new Error("Not enough resources");
 
     Object.entries(payment).forEach(([color, amount]) => {
       player.tokens[color as GemColor]! -= amount;
       this.state.board.tokens[color as GemColor]! += amount;
     });
-    if (goldNeeded > 0) {
-      player.tokens.gold! -= goldNeeded;
-      this.state.board.tokens.gold! += goldNeeded;
-    }
+
 
     player.cards.push(card);
     player.score += card.points;

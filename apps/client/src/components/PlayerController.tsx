@@ -6,7 +6,7 @@ import { Token, GEM_IMAGES } from './ui/Token';
 import { TokenColor, GemColor, Card as CardType, GEM_COLORS } from '@local-splendor/shared';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
-import { Gem, Coins, Hand, ShoppingCart, ArrowLeft, Check, LogOut, Wallet } from 'lucide-react';
+import { Gem, Coins, Hand, ShoppingCart, ArrowLeft, Check, LogOut, Wallet, Minus, Plus, X } from 'lucide-react';
 
 const GEM_BORDER_COLORS: Record<GemColor | 'gold', string> = {
   emerald: 'border-green-700',
@@ -18,6 +18,149 @@ const GEM_BORDER_COLORS: Record<GemColor | 'gold', string> = {
 };
 
 type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE';
+
+const PaymentModal = ({ card, player, onClose, onSubmit, t }: {
+    card: CardType,
+    player: any,
+    onClose: () => void,
+    onSubmit: (card: CardType, payment: Record<string, number>) => void,
+    t: any
+}) => {
+    const [tokenPayment, setTokenPayment] = useState<Record<string, number>>({});
+
+    // Calculate derived state
+    const discount: Record<string, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+    player.cards.forEach((c: any) => { discount[c.gem]++; });
+
+    // Initialize defaults on mount
+    useEffect(() => {
+        const initialPayment: Record<string, number> = {};
+        for (const color of Object.keys(card.cost)) {
+           if(color === 'gold') continue;
+           const cost = card.cost[color] || 0;
+           const bonus = discount[color] || 0;
+           const req = Math.max(0, cost - bonus);
+
+           // Default: use tokens as much as possible
+           const available = player.tokens[color as TokenColor] || 0;
+           const pay = Math.min(req, available);
+           initialPayment[color] = pay;
+        }
+        setTokenPayment(initialPayment);
+    }, [card]);
+
+    // Recalculate based on current tokenPayment
+    let goldUsed = 0;
+    const rows = Object.keys(card.cost).map(color => {
+        const cost = card.cost[color] || 0;
+        const bonus = discount[color] || 0;
+        const req = Math.max(0, cost - bonus);
+        const pay = tokenPayment[color] ?? 0;
+        const deficit = Math.max(0, req - pay);
+        goldUsed += deficit;
+
+        return { color, cost, bonus, req, pay };
+    });
+
+    const canAfford = (player.tokens.gold || 0) >= goldUsed;
+
+    const handleAdjust = (color: string, delta: number) => {
+        const current = tokenPayment[color] || 0;
+        const row = rows.find(r => r.color === color);
+        if(!row) return;
+
+        const newValue = current + delta;
+
+        // Limits
+        if (newValue < 0) return; // Cannot pay negative
+        if (newValue > row.req) return; // Cannot pay more than req
+        if (newValue > (player.tokens[color as TokenColor] || 0)) return; // Cannot pay more than owned
+
+        // Check Gold constraint for decreasing payment
+        // If we decrease payment, goldUsed increases.
+        if (delta < 0) {
+            if (goldUsed + 1 > (player.tokens.gold || 0)) return; // Not enough gold to cover
+        }
+
+        setTokenPayment({ ...tokenPayment, [color]: newValue });
+    };
+
+    return (
+       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200">
+           <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl border border-gray-600">
+               <h2 className="text-xl font-bold mb-4 flex justify-between items-center text-white">
+                  {t('Select Payment')}
+                  <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded"><X size={20} /></button>
+               </h2>
+
+               <div className="space-y-4 mb-6">
+                   {rows.map(row => (
+                       <div key={row.color} className="flex items-center justify-between bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+                           <div className="flex items-center gap-3">
+                               <div className={clsx("w-10 h-10 rounded-full border-2 overflow-hidden shadow-sm", GEM_BORDER_COLORS[row.color as GemColor])}>
+                                    <img src={GEM_IMAGES[row.color as GemColor]} className="w-full h-full object-cover scale-150" />
+                               </div>
+                               <div className="flex flex-col">
+                                   <span className="text-xs text-gray-400 uppercase tracking-wider">{row.color}</span>
+                                   <div className="flex gap-2 text-xs">
+                                       <span className="text-red-400">Cost: {row.cost}</span>
+                                       <span className="text-green-400">Bonus: {row.bonus}</span>
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-1">
+                               <button
+                                   onClick={() => handleAdjust(row.color, -1)}
+                                   disabled={row.pay <= 0 || (goldUsed + 1 > (player.tokens.gold || 0))}
+                                   className="p-1.5 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-30 transition-colors text-white"
+                               >
+                                   <Minus size={16} />
+                               </button>
+                               <span className="w-8 text-center font-bold text-lg text-white">{row.pay}</span>
+                               <button
+                                   onClick={() => handleAdjust(row.color, 1)}
+                                   disabled={row.pay >= row.req || row.pay >= (player.tokens[row.color as TokenColor] || 0)}
+                                   className="p-1.5 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-30 transition-colors text-white"
+                               >
+                                   <Plus size={16} />
+                               </button>
+                           </div>
+                       </div>
+                   ))}
+
+                   {/* Gold Row (Calculated) */}
+                   <div className="flex items-center justify-between bg-yellow-900/20 p-3 rounded-lg border border-yellow-700/50">
+                        <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-full border-2 border-yellow-600 overflow-hidden shadow-sm">
+                                 <img src={GEM_IMAGES['gold']} className="w-full h-full object-cover scale-150" />
+                             </div>
+                             <span className="font-bold text-yellow-500">Gold Needed</span>
+                        </div>
+                        <span className={clsx("font-bold text-xl", goldUsed > (player.tokens.gold || 0) ? "text-red-500" : "text-yellow-500")}>
+                            {goldUsed} <span className="text-sm text-gray-400">/ {player.tokens.gold || 0}</span>
+                        </span>
+                   </div>
+               </div>
+
+               <div className="flex gap-3">
+                   <button onClick={onClose} className="flex-1 py-3 rounded-lg font-bold bg-gray-700 hover:bg-gray-600 text-white transition-colors">{t('Cancel')}</button>
+                   <button
+                      onClick={() => {
+                          const finalPayment = { ...tokenPayment, gold: goldUsed };
+                          onSubmit(card, finalPayment);
+                      }}
+                      disabled={!canAfford}
+                      className="flex-1 py-3 rounded-lg font-bold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors flex justify-center items-center gap-2"
+                   >
+                       <Check size={18} />
+                       {t('Confirm')}
+                   </button>
+               </div>
+           </div>
+       </div>
+    );
+};
 
 export function PlayerController() {
   const { t, i18n } = useTranslation();
@@ -39,7 +182,8 @@ export function PlayerController() {
 
   const [currentView, setCurrentView] = useState<ActionView>('DASHBOARD');
   const [selectedTokens, setSelectedTokens] = useState<GemColor[]>([]);
-  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [paymentCard, setPaymentCard] = useState<CardType | null>(null);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -75,6 +219,23 @@ export function PlayerController() {
 
   // --- Handlers ---
 
+  const canAffordCard = (card: CardType) => {
+      const discount: Record<string, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+      player.cards.forEach(c => { discount[c.gem]++; });
+
+      let goldNeeded = 0;
+      for (const color of Object.keys(card.cost)) {
+          const cost = card.cost[color] || 0;
+          const bonus = discount[color] || 0;
+          const req = Math.max(0, cost - bonus);
+          const available = player.tokens[color as TokenColor] || 0;
+          if (available < req) {
+              goldNeeded += (req - available);
+          }
+      }
+      return (player.tokens.gold || 0) >= goldNeeded;
+  };
+
   const handleTokenClick = (color: TokenColor) => {
     if (color === 'gold') return;
     const gem = color as GemColor;
@@ -98,9 +259,11 @@ export function PlayerController() {
       setCurrentView('DASHBOARD');
   };
 
-  const submitBuy = (card: CardType) => {
-      sendAction({ type: 'BUY_CARD', payload: { cardId: card.id } });
+  const submitBuy = (card: CardType, payment?: Record<string, number>) => {
+      sendAction({ type: 'BUY_CARD', payload: { cardId: card.id, payment } });
       setCurrentView('DASHBOARD');
+      setPaymentModalOpen(false);
+      setPaymentCard(null);
   };
 
   const submitReserve = (card: CardType) => {
@@ -308,13 +471,24 @@ export function PlayerController() {
               <div className="border-b border-gray-700 pb-6 mb-2">
                   <h3 className="mb-3 font-bold text-yellow-500 pl-2 border-l-4 border-yellow-500">{t('Reserved Cards')}</h3>
                   <div className="flex overflow-x-auto gap-4 pb-2 snap-x px-2">
-                     {player.reserved.map(card => (
-                         <div key={card.id} className="flex-shrink-0 snap-center">
-                             <Card card={card} onClick={() => {
-                                 if(window.confirm(t('Buy this reserved card?'))) submitBuy(card);
-                             }} />
-                         </div>
-                     ))}
+                     {player.reserved.map(card => {
+                         const affordable = canAffordCard(card);
+                         return (
+                             <div key={card.id} className="flex-shrink-0 snap-center relative">
+                                 <Card card={card} onClick={() => {
+                                     if (affordable) {
+                                         setPaymentCard(card);
+                                         setPaymentModalOpen(true);
+                                     } else {
+                                         alert(t('Not enough resources'));
+                                     }
+                                 }} />
+                                 {affordable && (
+                                     <div className="absolute inset-0 rounded-lg ring-4 ring-green-500 pointer-events-none animate-pulse opacity-50 z-20"></div>
+                                 )}
+                             </div>
+                         );
+                     })}
                   </div>
               </div>
           )}
@@ -323,16 +497,26 @@ export function PlayerController() {
             <div key={level}>
                 <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
                 <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
-                    {gameState.board.cards[level as 1|2|3].map(card => (
-                        <div key={card.id} className="flex-shrink-0 snap-center">
-                            <Card card={card} onClick={() => {
-                                if(window.confirm(t('Buy this card?'))) submitBuy(card);
-                            }} />
-                        </div>
-                    ))}
+                    {gameState.board.cards[level as 1|2|3].map(card => {
+                        const affordable = canAffordCard(card);
+                        return (
+                            <div key={card.id} className="flex-shrink-0 snap-center relative">
+                                <Card card={card} onClick={() => {
+                                    if (affordable) {
+                                        setPaymentCard(card);
+                                        setPaymentModalOpen(true);
+                                    }
+                                }} />
+                                {affordable && (
+                                     <div className="absolute inset-0 rounded-lg ring-4 ring-green-500 pointer-events-none animate-pulse opacity-50 z-20"></div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
           ))}
+          {paymentModalOpen && paymentCard && <PaymentModal card={paymentCard} player={player} t={t} onSubmit={submitBuy} onClose={() => { setPaymentModalOpen(false); setPaymentCard(null); }} />}
       </div>
   );
 
