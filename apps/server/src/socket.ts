@@ -4,8 +4,9 @@ import { EVENTS, Action, ActionType, GemColor } from '@local-splendor/shared';
 import { SplendorGame } from './domain/game';
 
 interface Room {
-  players: string[];
-  spectators: string[];
+  players: string[]; // userIds
+  playerSockets: Map<string, string>; // userId -> socketId
+  spectators: string[]; // socketIds
   game?: SplendorGame;
 }
 
@@ -28,16 +29,34 @@ export class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log(`User connected: ${socket.id}`);
 
-      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator }: { roomId: string, asSpectator?: boolean }) => {
+      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator, userId }: { roomId: string, asSpectator?: boolean, userId?: string }) => {
         let room = this.rooms.get(roomId);
         if (!room) {
-          room = { players: [], spectators: [] };
+          room = { players: [], playerSockets: new Map(), spectators: [] };
           this.rooms.set(roomId, room);
         }
 
         if (asSpectator) {
           room.spectators.push(socket.id);
         } else {
+          // If no userId provided, fallback to socket.id (should not happen with updated client)
+          const uid = userId || socket.id;
+
+          // Check if player is already in the room (reconnection)
+          if (room.players.includes(uid)) {
+              console.log(`User ${uid} reconnected with socket ${socket.id}`);
+              room.playerSockets.set(uid, socket.id);
+              socket.join(roomId);
+
+              // If game is running, send current state immediately
+              if (room.game) {
+                  socket.emit(EVENTS.UPDATE_GAME_STATE, room.game.getState());
+              } else {
+                  this.broadcastState(roomId);
+              }
+              return;
+          }
+
           if (room.game) {
             socket.emit(EVENTS.ERROR, { message: "Game already started" });
             return;
@@ -46,11 +65,13 @@ export class SocketServer {
             socket.emit(EVENTS.ERROR, { message: "Room is full" });
             return;
           }
-          room.players.push(socket.id);
+
+          room.players.push(uid);
+          room.playerSockets.set(uid, socket.id);
         }
 
         socket.join(roomId);
-        console.log(`User ${socket.id} joined room ${roomId} (spectator: ${!!asSpectator})`);
+        console.log(`User ${userId || socket.id} joined room ${roomId} (spectator: ${!!asSpectator})`);
 
         // Notify everyone in room about new player count or game state
         this.broadcastState(roomId);
@@ -77,8 +98,12 @@ export class SocketServer {
         // Assuming host is usually a spectator.
 
         room.game = undefined;
-        // Optionally clear players or keep them in lobby?
-        // Let's keep them in lobby so they can restart easily.
+        // Clear players so they need to re-join
+        room.players = [];
+        room.playerSockets.clear();
+
+        // Notify all clients that the game was reset - they should return to home
+        this.io.to(roomId).emit(EVENTS.GAME_RESET);
         this.broadcastState(roomId);
       });
 
@@ -86,16 +111,30 @@ export class SocketServer {
         const room = this.rooms.get(roomId);
         if (!room || !room.game) return;
 
+        // Find userId from socket.id
+        let userId: string | undefined;
+        for (const [uid, sid] of room.playerSockets.entries()) {
+            if (sid === socket.id) {
+                userId = uid;
+                break;
+            }
+        }
+
+        if (!userId) {
+            socket.emit(EVENTS.ERROR, { message: "Player not found" });
+            return;
+        }
+
         try {
           switch (action.type) {
             case 'TAKE_GEMS':
-              room.game.takeGems(socket.id, action.payload.gems);
+              room.game.takeGems(userId, action.payload.gems);
               break;
             case 'RESERVE_CARD':
-              room.game.reserveCard(socket.id, action.payload.cardId);
+              room.game.reserveCard(userId, action.payload.cardId);
               break;
             case 'BUY_CARD':
-              room.game.buyCard(socket.id, action.payload.cardId);
+              room.game.buyCard(userId, action.payload.cardId);
               break;
           }
           this.broadcastState(roomId);
@@ -108,9 +147,28 @@ export class SocketServer {
         console.log(`User disconnected: ${socket.id}`);
         // Cleanup logic (remove from room, etc.) - Simplified for now
         this.rooms.forEach((room, roomId) => {
-           room.players = room.players.filter(p => p !== socket.id);
+           // If spectator, remove
            room.spectators = room.spectators.filter(p => p !== socket.id);
-           // If game active, maybe pause or forfeit? ignoring for MVP
+
+           // If player, remove from socket map but keep in players list if game is active
+           let userIdToRemove: string | undefined;
+           for (const [uid, sid] of room.playerSockets.entries()) {
+               if (sid === socket.id) {
+                   userIdToRemove = uid;
+                   break;
+               }
+           }
+
+           if (userIdToRemove) {
+               room.playerSockets.delete(userIdToRemove);
+
+               // If game is NOT active, we can remove the player from the list too
+               // allowing them to re-join or someone else to take the spot
+               if (!room.game) {
+                   room.players = room.players.filter(p => p !== userIdToRemove);
+                   this.broadcastState(roomId);
+               }
+           }
         });
       });
     });

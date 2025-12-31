@@ -2,13 +2,20 @@ import React from 'react';
 import { Noble as NobleType, GemColor } from '@local-splendor/shared';
 import clsx from 'clsx';
 
-const GEM_COLORS: Record<GemColor, string> = {
-  emerald: 'bg-green-500',
-  sapphire: 'bg-blue-500',
-  ruby: 'bg-red-500',
-  diamond: 'bg-gray-200 border-gray-400',
-  onyx: 'bg-gray-800',
-};
+// Import gem images
+import rubyImg from '../../assets/gems/ruby.png';
+import emeraldImg from '../../assets/gems/emerald.png';
+import sapphireImg from '../../assets/gems/sapphire.png';
+import diamondImg from '../../assets/gems/diamond.png';
+import onyxImg from '../../assets/gems/onyx.png';
+
+// Import noble images
+import man1Img from '../../assets/nobles/man1.png';
+import man2Img from '../../assets/nobles/man2.png';
+import man3Img from '../../assets/nobles/man3.png';
+import woman1Img from '../../assets/nobles/woman1.png';
+import woman2Img from '../../assets/nobles/woman2.png';
+import woman3Img from '../../assets/nobles/woman3.png';
 
 const GEM_BORDER_COLORS: Record<GemColor, string> = {
   emerald: 'border-green-700',
@@ -17,6 +24,18 @@ const GEM_BORDER_COLORS: Record<GemColor, string> = {
   diamond: 'border-gray-400',
   onyx: 'border-gray-600',
 };
+
+// Map colors to their images
+const GEM_IMAGES: Record<GemColor, string> = {
+  ruby: rubyImg,
+  emerald: emeraldImg,
+  sapphire: sapphireImg,
+  diamond: diamondImg,
+  onyx: onyxImg,
+};
+
+// Noble images pool
+const NOBLE_IMAGES = [man1Img, man2Img, man3Img, woman1Img, woman2Img, woman3Img];
 
 type NobleSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -29,27 +48,58 @@ const NOBLE_SIZES = {
 
 export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSize }) {
   const s = NOBLE_SIZES[size];
+
+  // Use assigned image index or fallback
+  const nobleImg = noble.imageIndex !== undefined
+      ? NOBLE_IMAGES[noble.imageIndex % NOBLE_IMAGES.length]
+      : NOBLE_IMAGES[parseInt(noble.id.split('-')[1] || '0', 10) % NOBLE_IMAGES.length];
+
   return (
-    <div className={clsx(s.container, s.padding, "bg-amber-100 rounded-lg border-2 border-amber-300 flex flex-col shadow-md")}>
-      <span className={clsx("font-bold text-black self-center mb-1", s.points)}>{noble.points}</span>
-      <div className={clsx("flex flex-col", s.rowGap)}>
-        {Object.entries(noble.requirements).map(([color, count]) => (
-           count > 0 && (
-               <div key={color} className={clsx("flex", s.dotGap)}>
-                   {Array.from({ length: count }).map((_, i) => (
-                       <div
-                           key={i}
-                           className={clsx(
-                               "rounded-sm border-2",
-                               s.square,
-                               GEM_COLORS[color as GemColor],
-                               GEM_BORDER_COLORS[color as GemColor]
-                           )}
-                       />
-                   ))}
-               </div>
-           )
-        ))}
+    <div className={clsx(
+        s.container, s.padding,
+        "rounded-lg shadow-xl relative overflow-hidden group transition-transform hover:scale-105 border-2 border-amber-600/30"
+    )}>
+      {/* Background Image */}
+      <div className="absolute inset-0 bg-gray-200">
+          <img src={nobleImg} alt="Noble" className="w-full h-full object-cover opacity-90" />
+      </div>
+
+      {/* Gradient Overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/40 pointer-events-none" />
+
+      {/* Content Container - Flex column: Points at top, Requirements at bottom */}
+      <div className="relative z-10 flex flex-col justify-between h-full">
+          {/* Points */}
+          <span className={clsx("font-serif font-black text-black self-start drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]", s.points)}>
+              {noble.points}
+          </span>
+
+          {/* Requirements */}
+          <div className={clsx("flex flex-col bg-black/40 backdrop-blur-sm p-1 rounded-md border border-white/10", s.rowGap)}>
+            {Object.entries(noble.requirements).map(([color, count]) => (
+               count > 0 && (
+                   <div key={color} className={clsx("flex", s.dotGap)}>
+                       {Array.from({ length: count }).map((_, i) => (
+                           <div
+                               key={i}
+                               className={clsx(
+                                   "rounded-sm border overflow-hidden shadow-sm",
+                                   s.square,
+                                   GEM_BORDER_COLORS[color as GemColor]
+                               )}
+                           >
+                             <img
+                               src={GEM_IMAGES[color as GemColor]}
+                               alt={color}
+                               className="w-full h-full object-cover scale-150"
+                             />
+                           </div>
+                       ))}
+                   </div>
+               )
+            ))}
+          </div>
       </div>
     </div>
   );

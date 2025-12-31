@@ -3,10 +3,19 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { Card, CardBack } from './ui/Card';
 import { Noble } from './ui/Noble';
-import { Token } from './ui/Token';
+import { Token, GEM_IMAGES } from './ui/Token';
 import { GemColor, TokenColor } from '@local-splendor/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
+import clsx from 'clsx';
+
+const GEM_BORDER_COLORS: Record<GemColor, string> = {
+  emerald: 'border-green-700',
+  sapphire: 'border-blue-700',
+  ruby: 'border-red-700',
+  diamond: 'border-gray-400',
+  onyx: 'border-gray-600',
+};
 
 export function HostBoard() {
   const { t, i18n } = useTranslation();
@@ -112,13 +121,13 @@ export function HostBoard() {
   const { board, players, currentPlayerIndex } = gameState;
 
   return (
-    <div className="min-h-screen bg-gray-900 p-6 overflow-hidden flex flex-col relative text-white text-xl">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black p-6 overflow-hidden flex flex-col relative text-white text-xl font-serif">
        {/* Top Controls */}
        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-6">
-              <span className="text-3xl font-bold">{t('Room')}: {roomId}</span>
-              <div className="flex items-center gap-6 bg-gray-800 px-6 py-4 rounded-2xl">
-                  <span className="text-xl text-gray-300 font-semibold">{t('Resources')}</span>
+              <span className="text-3xl font-bold tracking-wider drop-shadow-lg text-amber-500">{t('Room')}: {roomId}</span>
+              <div className="flex items-center gap-6 bg-slate-800/80 backdrop-blur-sm px-6 py-4 rounded-2xl border border-slate-700 shadow-xl">
+                  <span className="text-xl text-slate-300 font-semibold uppercase tracking-widest text-sm">{t('Resources')}</span>
                   <div className="flex gap-6">
                       {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'] as TokenColor[]).map(color => (
                           <Token key={color} color={color} count={board.tokens[color] || 0} size="xl" />
@@ -127,12 +136,12 @@ export function HostBoard() {
               </div>
           </div>
           <div className="flex gap-4 items-center">
-              <button onClick={handleReset} className="bg-red-600/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-lg font-bold backdrop-blur">
+              <button onClick={handleReset} className="bg-red-600/80 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-lg font-bold backdrop-blur shadow-lg border border-red-500/50 transition-all hover:scale-105">
                   {t('Reset Game')}
               </button>
-              <div className="flex bg-gray-800 rounded-lg text-lg">
-                   <button onClick={() => changeLanguage('en')} className={`px-4 py-2 rounded-lg ${i18n.language === 'en' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>EN</button>
-                   <button onClick={() => changeLanguage('ja')} className={`px-4 py-2 rounded-lg ${i18n.language === 'ja' ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>JA</button>
+              <div className="flex bg-slate-800/80 backdrop-blur rounded-lg text-lg border border-slate-700 p-1">
+                   <button onClick={() => changeLanguage('en')} className={`px-4 py-2 rounded-md transition-all ${i18n.language === 'en' ? 'bg-blue-600 shadow-lg' : 'hover:bg-slate-700 text-slate-400'}`}>EN</button>
+                   <button onClick={() => changeLanguage('ja')} className={`px-4 py-2 rounded-md transition-all ${i18n.language === 'ja' ? 'bg-blue-600 shadow-lg' : 'hover:bg-slate-700 text-slate-400'}`}>JA</button>
               </div>
           </div>
        </div>
@@ -146,9 +155,19 @@ export function HostBoard() {
                ))}
            </div>
 
-           {/* Center: Card Grid (3 rows: level 3,2,1) */}
+           {/* Center: Card Grid (3 rows: level 1,2,3 from top to bottom?) Wait, standard splendor has level 3 at top.
+               User request: "Change deck order to 1,2,3".
+               If they mean visual order from top to bottom:
+               Usually it's:
+               Top: Level 3
+               Mid: Level 2
+               Bot: Level 1
+
+               If user wants 1,2,3 from top, I should loop [1,2,3].
+               Let's assume "1,2,3" means Level 1 at top.
+           */}
            <div className="flex-1 flex flex-col justify-start gap-5 py-2">
-               {[3, 2, 1].map((level) => (
+               {[1, 2, 3].map((level) => (
                    <div key={level} className="flex gap-5 items-center">
                        <CardBack level={level as 1|2|3} size="xl" />
                        <div className="flex gap-5">
@@ -160,26 +179,32 @@ export function HostBoard() {
                ))}
            </div>
 
-           {/* Right: Players list */}
-           <div className="w-[420px] flex flex-col gap-5 h-full">
+                   {/* Right: Players list */}
+                   <div className="w-[520px] flex flex-col gap-5 h-full">
                {players.map((p, idx) => {
                    // Count card bonuses by gem color
                    const bonuses: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
                    p.cards.forEach(card => { bonuses[card.gem]++; });
 
                    return (
-                       <div key={p.id} className={`p-6 rounded-2xl transition-all ${
+                       <div key={p.id} className={`p-6 rounded-2xl transition-all duration-300 border-2 ${
                            idx === currentPlayerIndex
-                           ? 'bg-gradient-to-r from-yellow-900/80 to-gray-800 border-3 border-yellow-500 shadow-lg shadow-yellow-500/20'
-                           : 'bg-gray-800/60 border border-gray-700'
+                           ? 'bg-gradient-to-br from-amber-900/90 to-slate-900/90 border-amber-500 shadow-[0_0_25px_rgba(245,158,11,0.3)] scale-105 z-10'
+                           : 'bg-slate-800/60 border-slate-700 hover:bg-slate-800/80'
                        }`}>
                            <div className="flex justify-between items-center mb-4">
-                               <div className="font-bold text-2xl truncate flex-1">{p.name}</div>
-                               <div className="font-black text-4xl text-yellow-400">{p.score}</div>
+                               <div className={clsx("font-serif text-2xl truncate flex-1 tracking-wide", idx === currentPlayerIndex ? "text-amber-100 font-bold" : "text-slate-300")}>{p.name}</div>
+                               <div className="font-serif font-black text-4xl text-amber-400 drop-shadow-md">{p.score}</div>
                            </div>
                            <div className="grid grid-cols-2 gap-4 text-xl text-gray-200 mb-4">
-                               <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Cards')}: <span className="text-white font-bold">{p.cards.length}</span></div>
-                               <div className="bg-black/30 px-5 py-3 rounded-lg">{t('Res')}: <span className="text-white font-bold">{p.reserved.length}</span></div>
+                               <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
+                                   <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Cards')}</span>
+                                   <span className="text-white font-bold">{p.cards.length}</span>
+                               </div>
+                               <div className="bg-black/40 px-4 py-2 rounded-lg border border-white/5 flex justify-between items-center">
+                                   <span className="text-slate-400 text-sm uppercase tracking-wider">{t('Res')}</span>
+                                   <span className="text-white font-bold">{p.reserved.length}</span>
+                               </div>
                            </div>
                            {/* Tokens (circles) and Bonuses (squares) */}
                            <div className="flex gap-6">
@@ -187,22 +212,26 @@ export function HostBoard() {
                                <div className="flex flex-wrap gap-2">
                                    {Object.entries(p.tokens).map(([color, count]) => (
                                        (count as number) > 0 && (
-                                           <div key={color} className="relative">
-                                               <div className={`w-8 h-8 rounded-full ${getColorBg(color as TokenColor)}`}></div>
-                                               <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-gray-900/80 rounded-full px-1">{count}</span>
+                                           <div key={color} className="relative group">
+                                               <div className={`w-10 h-10 rounded-full border-2 border-gray-400 overflow-hidden shadow-lg transform transition-transform group-hover:scale-110`}>
+                                                   <img src={GEM_IMAGES[color as TokenColor]} alt={color} className="w-full h-full object-cover scale-150" />
+                                               </div>
+                                               <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-slate-900 rounded-full w-6 h-6 flex items-center justify-center border border-slate-600">{count}</span>
                                            </div>
                                        )
                                    ))}
                                </div>
                                {/* Divider */}
-                               {p.cards.length > 0 && <div className="w-px bg-gray-600"></div>}
+                               {p.cards.length > 0 && <div className="w-px bg-slate-600/50 my-1"></div>}
                                {/* Bonuses - squares */}
                                <div className="flex flex-wrap gap-2">
                                    {Object.entries(bonuses).map(([color, count]) => (
                                        count > 0 && (
-                                           <div key={color} className="relative">
-                                               <div className={`w-8 h-8 rounded-sm ${getColorBg(color as GemColor)} border-2 ${getBorderColor(color as GemColor)}`}></div>
-                                               <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-gray-900/80 rounded-full px-1">{count}</span>
+                                           <div key={color} className="relative group">
+                                               <div className={clsx("w-10 h-10 rounded-md border-2 overflow-hidden shadow-lg transform transition-transform group-hover:scale-110", GEM_BORDER_COLORS[color as GemColor])}>
+                                                   <img src={GEM_IMAGES[color as GemColor]} alt={color} className="w-full h-full object-cover scale-150" />
+                                               </div>
+                                               <span className="absolute -top-2 -right-2 text-sm font-bold text-white drop-shadow-md bg-slate-900 rounded-full w-6 h-6 flex items-center justify-center border border-slate-600">{count}</span>
                                            </div>
                                        )
                                    ))}
@@ -215,27 +244,4 @@ export function HostBoard() {
        </div>
     </div>
   );
-}
-
-function getColorBg(color: TokenColor | GemColor) {
-    switch(color) {
-        case 'emerald': return 'bg-green-500';
-        case 'sapphire': return 'bg-blue-500';
-        case 'ruby': return 'bg-red-500';
-        case 'diamond': return 'bg-white';
-        case 'onyx': return 'bg-gray-800';
-        case 'gold': return 'bg-yellow-400';
-        default: return 'bg-gray-500';
-    }
-}
-
-function getBorderColor(color: GemColor) {
-    switch(color) {
-        case 'emerald': return 'border-green-700';
-        case 'sapphire': return 'border-blue-700';
-        case 'ruby': return 'border-red-700';
-        case 'diamond': return 'border-gray-400';
-        case 'onyx': return 'border-gray-600';
-        default: return 'border-gray-500';
-    }
 }

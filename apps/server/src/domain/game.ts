@@ -37,7 +37,14 @@ export class SplendorGame {
       3: [...CARDS_3].sort(() => Math.random() - 0.5),
     };
 
-    const nobles = [...NOBLES].sort(() => Math.random() - 0.5).slice(0, NOBLES_COUNT[playerCount]);
+    const selectedNobles = [...NOBLES].sort(() => Math.random() - 0.5).slice(0, NOBLES_COUNT[playerCount]);
+
+    // Assign random unique image indices (0-5) to cloned noble objects
+    const imageIndices = [0, 1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+    const nobles = selectedNobles.map((noble, i) => ({
+        ...noble,
+        imageIndex: imageIndices[i % imageIndices.length]
+    }));
 
     return {
       players: playerIds.map((id, index) => ({

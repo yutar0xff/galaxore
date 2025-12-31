@@ -3,13 +3,24 @@ import { getSocket } from '../infrastructure/socket';
 import { GameState, EVENTS, Action } from '@local-splendor/shared';
 import { Socket } from 'socket.io-client';
 
-export const useGame = (roomId: string | null, options: { asSpectator?: boolean } = {}) => {
+const getUserId = () => {
+  let id = localStorage.getItem('splendor_user_id');
+  if (!id) {
+    id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('splendor_user_id', id);
+  }
+  return id;
+};
+
+export const useGame = (roomId: string | null, options: { asSpectator?: boolean; onGameReset?: () => void } = {}) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [lobbyInfo, setLobbyInfo] = useState<{ players: number, spectators: number } | null>(null);
+  const [wasReset, setWasReset] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const userIdRef = useRef<string>(getUserId());
 
   useEffect(() => {
     if (!roomId) return;
@@ -29,8 +40,12 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean 
         const onConnect = () => {
           if (isMounted) {
             setIsConnected(true);
-            setPlayerId(currentSocket?.id || null);
-            currentSocket?.emit(EVENTS.JOIN_ROOM, { roomId, asSpectator: options.asSpectator });
+            setPlayerId(userIdRef.current);
+            currentSocket?.emit(EVENTS.JOIN_ROOM, {
+                roomId,
+                asSpectator: options.asSpectator,
+                userId: userIdRef.current
+            });
           }
         };
 
@@ -56,11 +71,20 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean 
           }
         };
 
+        const onGameReset = () => {
+          if (isMounted) {
+            setGameState(null);
+            setWasReset(true);
+            options.onGameReset?.();
+          }
+        };
+
         currentSocket.on('connect', onConnect);
         currentSocket.on('disconnect', onDisconnect);
         currentSocket.on(EVENTS.UPDATE_GAME_STATE, onUpdateGameState);
         currentSocket.on('lobby_update', onLobbyUpdate);
         currentSocket.on(EVENTS.ERROR, onError);
+        currentSocket.on(EVENTS.GAME_RESET, onGameReset);
 
         if (currentSocket.connected) {
           onConnect();
@@ -80,6 +104,7 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean 
         currentSocket.off(EVENTS.UPDATE_GAME_STATE);
         currentSocket.off('lobby_update');
         currentSocket.off(EVENTS.ERROR);
+        currentSocket.off(EVENTS.GAME_RESET);
         currentSocket.disconnect();
       }
     };
@@ -97,5 +122,5 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean 
     socketRef.current?.emit(EVENTS.GAME_ACTION, { roomId, action });
   };
 
-  return { gameState, error, isConnected, playerId, lobbyInfo, startGame, resetGame, sendAction };
+  return { gameState, error, isConnected, playerId, lobbyInfo, wasReset, startGame, resetGame, sendAction };
 };
