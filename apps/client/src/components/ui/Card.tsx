@@ -218,26 +218,17 @@ export function CardBack({ level, size = 'md' }: { level: 1 | 2 | 3; size?: Card
                 />
             </div>
 
-            {/* Pattern overlay */}
-            <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_center,_transparent_0%,_#000_100%)] pointer-events-none"></div>
-
-            {/* Center decorative circle */}
-            <div className="absolute w-2/3 h-2/3 border border-white/20 rounded-full flex items-center justify-center backdrop-blur-[2px]">
-                <div className="w-3/4 h-3/4 border border-white/30 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-md shadow-inner">
-                     {/* Level Dots */}
-                    <div className="flex gap-1.5">
-                        {Array.from({ length: level }).map((_, i) => (
-                            <div key={i} className={clsx("w-3 h-3 rounded-full", dotColors[level])}></div>
-                        ))}
-                    </div>
+            {/* Dots only (no capsule blur / no extra decoration) */}
+            <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex gap-2 transform rotate-45">
+                    {Array.from({ length: level }).map((_, i) => (
+                        <div
+                            key={i}
+                            className={clsx("w-3 h-3 rounded-full", dotColors[level])}
+                        />
+                    ))}
                 </div>
             </div>
-
-            {/* Corner decorations */}
-            <div className="absolute top-2 left-2 w-2 h-2 border-t-2 border-l-2 border-white/40"></div>
-            <div className="absolute top-2 right-2 w-2 h-2 border-t-2 border-r-2 border-white/40"></div>
-            <div className="absolute bottom-2 left-2 w-2 h-2 border-b-2 border-l-2 border-white/40"></div>
-            <div className="absolute bottom-2 right-2 w-2 h-2 border-b-2 border-r-2 border-white/40"></div>
         </div>
     )
 }

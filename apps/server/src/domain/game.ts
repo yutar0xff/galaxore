@@ -80,10 +80,18 @@ export class SplendorGame {
       turn: 1,
       winner: null,
       gameEnded: false,
+      phase: 'NORMAL',
+      lastAction: null,
+      winningScore: WINNING_SCORE,
     };
   }
 
   // --- Actions ---
+
+  public setWinningScore(score: number) {
+      if (score < 5 || score > 30) throw new Error("Score must be between 5 and 30");
+      this.state.winningScore = score;
+  }
 
   public takeGems(playerId: string, gems: GemColor[]) {
     this.validateTurn(playerId);
@@ -108,6 +116,14 @@ export class SplendorGame {
       player.tokens[color] = (player.tokens[color] || 0) + 1;
     });
 
+    const tokensTaken: Record<string, number> = {};
+    gems.forEach(g => tokensTaken[g] = (tokensTaken[g] || 0) + 1);
+
+    this.state.lastAction = {
+        type: 'TAKE_GEMS',
+        playerName: player.name,
+        tokens: tokensTaken
+    };
     this.endTurn();
   }
 
@@ -127,6 +143,11 @@ export class SplendorGame {
       player.tokens.gold = (player.tokens.gold || 0) + 1;
     }
 
+    this.state.lastAction = {
+        type: 'RESERVE_CARD',
+        playerName: player.name,
+        card: card
+    };
     this.endTurn();
   }
 
@@ -214,7 +235,42 @@ export class SplendorGame {
     }
 
     this.checkNobles(player);
+    this.state.lastAction = {
+        type: 'BUY_CARD',
+        playerName: player.name,
+        card: card
+    };
     this.endTurn();
+  }
+
+  public discardTokens(playerId: string, tokensToDiscard: { [key in TokenColor]?: number }) {
+    this.validateTurn(playerId);
+    if (this.state.phase !== 'DISCARDING') throw new Error("Not in discarding phase");
+
+    const player = this.getPlayer(playerId);
+    let discardedCount = 0;
+
+    for (const [color, amount] of Object.entries(tokensToDiscard)) {
+        if (!amount || amount <= 0) continue;
+        if ((player.tokens[color as TokenColor] || 0) < amount) {
+            throw new Error(`Not enough ${color} to discard`);
+        }
+        player.tokens[color as TokenColor]! -= amount;
+        this.state.board.tokens[color as TokenColor]! += amount;
+        discardedCount += amount;
+    }
+
+    this.state.lastAction = {
+        type: 'DISCARD_TOKENS',
+        playerName: player.name,
+        tokens: tokensToDiscard
+    };
+
+    const totalTokens = Object.values(player.tokens).reduce((a, b) => a + (b || 0), 0);
+    if (totalTokens <= 10) {
+        this.state.phase = 'NORMAL';
+        this.endTurn();
+    }
   }
 
   // --- Helpers ---
@@ -271,6 +327,15 @@ export class SplendorGame {
   }
 
   private endTurn() {
+    // Check if current player has > 10 tokens
+    const current = this.state.players[this.state.currentPlayerIndex];
+    const totalTokens = Object.values(current.tokens).reduce((a, b) => a + (b || 0), 0);
+
+    if (totalTokens > 10) {
+        this.state.phase = 'DISCARDING';
+        return; // Pause turn progression until tokens are discarded
+    }
+
     this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.state.players.length;
     if (this.state.currentPlayerIndex === 0) {
         this.state.turn++;
@@ -287,7 +352,7 @@ export class SplendorGame {
       // My logic in endTurn checks this at the start of next round (when index wraps to 0).
       // So effectively we play until all players have equal turns.
 
-      const candidates = this.state.players.filter(p => p.score >= WINNING_SCORE);
+      const candidates = this.state.players.filter(p => p.score >= this.state.winningScore);
       if (candidates.length === 0) return null;
 
       candidates.sort((a, b) => {

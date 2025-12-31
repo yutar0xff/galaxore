@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { Card } from './ui/Card';
+import { Modal } from './ui/Modal';
 import { Token, GEM_IMAGES } from './ui/Token';
 import { TokenColor, GemColor, Card as CardType, GEM_COLORS } from '@local-splendor/shared';
 import { useTranslation } from 'react-i18next';
@@ -17,14 +18,15 @@ const GEM_BORDER_COLORS: Record<GemColor | 'gold', string> = {
   gold: 'border-yellow-600',
 };
 
-type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE';
+type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE' | 'DISCARD_TOKENS';
 
-const PaymentModal = ({ card, player, onClose, onSubmit, t }: {
+const PaymentModal = ({ card, player, onClose, onSubmit, t, isMyTurn }: {
     card: CardType,
     player: any,
     onClose: () => void,
     onSubmit: (card: CardType, payment: Record<string, number>) => void,
-    t: any
+    t: any,
+    isMyTurn: boolean
 }) => {
     const [tokenPayment, setTokenPayment] = useState<Record<string, number>>({});
 
@@ -150,11 +152,11 @@ const PaymentModal = ({ card, player, onClose, onSubmit, t }: {
                           const finalPayment = { ...tokenPayment, gold: goldUsed };
                           onSubmit(card, finalPayment);
                       }}
-                      disabled={!canAfford}
+                      disabled={!canAfford || !isMyTurn}
                       className="flex-1 py-3 rounded-lg font-bold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors flex justify-center items-center gap-2"
                    >
                        <Check size={18} />
-                       {t('Confirm')}
+                       {isMyTurn ? t('Confirm') : t('Not your turn')}
                    </button>
                </div>
            </div>
@@ -173,8 +175,26 @@ export function PlayerController() {
     localStorage.setItem('i18nextLng', lng);
   };
 
+  const [dialog, setDialog] = useState<{
+      isOpen: boolean;
+      type: 'alert' | 'confirm';
+      title?: string;
+      message: string;
+      onConfirm?: () => void;
+  }>({ isOpen: false, type: 'alert', message: '' });
+
+  const showAlert = (message: string, title?: string) => {
+      setDialog({ isOpen: true, type: 'alert', message, title: title || t('Alert') });
+  };
+
+  const showConfirm = (message: string, onConfirm: () => void, title?: string) => {
+      setDialog({ isOpen: true, type: 'confirm', message, onConfirm, title: title || t('Confirm') });
+  };
+
+  const closeDialog = () => setDialog({ ...dialog, isOpen: false });
+
   const handleGameReset = () => {
-    alert(t('Game has been reset by host'));
+    showAlert(t('Game has been reset by host'));
     navigate('/');
   };
 
@@ -184,6 +204,14 @@ export function PlayerController() {
   const [selectedTokens, setSelectedTokens] = useState<GemColor[]>([]);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentCard, setPaymentCard] = useState<CardType | null>(null);
+
+  useEffect(() => {
+    if (gameState?.phase === 'DISCARDING' && gameState.players[gameState.currentPlayerIndex].id === playerId) {
+        if (currentView !== 'DISCARD_TOKENS') {
+            setCurrentView('DISCARD_TOKENS');
+        }
+    }
+  }, [gameState, playerId, currentView]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -267,8 +295,15 @@ export function PlayerController() {
   };
 
   const submitReserve = (card: CardType) => {
-      sendAction({ type: 'RESERVE_CARD', payload: { cardId: card.id } });
-      setCurrentView('DASHBOARD');
+      const goldAvailable = gameState.board.tokens.gold || 0;
+      let message = t('Reserve this card?');
+      if (goldAvailable === 0) {
+          message = t('No gold available. Reserve anyway?');
+      }
+      showConfirm(message, () => {
+          sendAction({ type: 'RESERVE_CARD', payload: { cardId: card.id } });
+          setCurrentView('DASHBOARD');
+      });
   };
 
   // --- Components ---
@@ -347,24 +382,96 @@ export function PlayerController() {
 
       const allGemColors: GemColor[] = ['ruby', 'sapphire', 'emerald', 'diamond', 'onyx'];
       const hasAnyGems = allGemColors.some(c => (bonusCounts[c] > 0) || (tokenCounts[c] > 0)) || (tokenCounts['gold'] > 0);
+      const totalTokens = Object.values(player.tokens).reduce((a, b) => a + (b || 0), 0);
 
       return (
       <div className="flex flex-col h-full">
+          {/* Last Action */}
+          {gameState.lastAction && (
+              <div className="bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-xl border border-slate-700 shadow-xl relative mx-2 mb-4 mt-2 min-h-[100px] flex flex-col justify-center">
+                  <span className="absolute -top-2 -left-2 text-[10px] text-slate-400 bg-slate-900 px-1 rounded border border-slate-700 uppercase tracking-widest font-sans">Last</span>
+
+                  {/* Layout changes based on action type */}
+                  {(gameState.lastAction.type === 'BUY_CARD' || gameState.lastAction.type === 'RESERVE_CARD') ? (
+                    /* Card: Horizontal Layout */
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col flex-1">
+                        <div className="flex items-center gap-2">
+                            <span className="font-bold text-amber-400">{gameState.lastAction.playerName}</span>
+                            <span className="text-gray-300 text-xs">
+                                {gameState.lastAction.type === 'BUY_CARD' ? t('bought a card') : t('reserved a card')}
+                            </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-center gap-1 shrink-0">
+                          <div className="scale-75 origin-center">
+                              <Card card={gameState.lastAction.card!} size="sm" />
+                          </div>
+                          <div className="text-[10px] text-slate-400 uppercase font-bold">
+                              {gameState.lastAction.type === 'RESERVE_CARD' ? t('Reserved') : t('Bought')}
+                          </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Token: Vertical Layout */
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                          <span className="font-bold text-amber-400">{gameState.lastAction.playerName}</span>
+                          <span className="text-gray-300 text-xs">
+                              {gameState.lastAction.type === 'TAKE_GEMS' && t('took tokens')}
+                              {gameState.lastAction.type === 'DISCARD_TOKENS' && t('discarded tokens')}
+                          </span>
+                      </div>
+                      <div className="flex items-center justify-center bg-black/20 rounded p-2 min-h-[64px]">
+                          <div className="flex gap-3">
+                              {Object.entries(gameState.lastAction.tokens || {}).map(([color, count]) => (
+                                  count && count > 0 && <Token key={color} color={color as TokenColor} count={count} size="lg" />
+                              ))}
+                          </div>
+                      </div>
+                    </div>
+                  )}
+              </div>
+          )}
+
+          {/* Board Tokens */}
+          <div className="mx-2 mb-2 px-4 py-3 bg-slate-800/80 backdrop-blur-sm rounded-xl border border-slate-700 shadow-xl relative">
+               <span className="absolute -top-2 -left-2 text-[10px] text-slate-400 bg-slate-900 px-1 rounded border border-slate-700 uppercase tracking-widest font-sans">{t('Resources')}</span>
+               <div className="flex gap-3 justify-center">
+                   {['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'].map(c => (
+                       <div key={c} className="flex flex-col items-center">
+                           <div className={clsx("w-8 h-8 rounded-full border border-gray-500 overflow-hidden shadow-sm", GEM_BORDER_COLORS[c as GemColor] || 'border-yellow-600')}>
+                                <img src={GEM_IMAGES[c as GemColor]} className="w-full h-full object-cover scale-150" />
+                           </div>
+                           <span className="text-sm font-bold text-gray-300 mt-1">{gameState.board.tokens[c as TokenColor] || 0}</span>
+                       </div>
+                   ))}
+               </div>
+          </div>
+
           {/* Header: Player name and score */}
-          <div className="flex justify-between items-center mb-4 px-2">
-              <span className="text-xl font-bold">{player.name}</span>
+          <div className="flex justify-between items-center mb-4 px-4 mt-2">
+              <span className="text-2xl font-bold font-serif">{player.name}</span>
               <div className="flex items-center gap-4">
-                  <div className="flex bg-gray-800 rounded border border-gray-700 p-0.5">
-                      <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs rounded transition-all ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>EN</button>
-                      <button onClick={() => changeLanguage('ja')} className={`px-2 py-1 text-xs rounded transition-all ${i18n.language === 'ja' ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>JA</button>
+                  <div className="flex bg-slate-800 rounded-lg border border-slate-700 p-1">
+                      <button onClick={() => changeLanguage('en')} className={`px-2 py-1 text-xs rounded transition-all font-bold ${i18n.language === 'en' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-slate-700'}`}>EN</button>
+                      <button onClick={() => changeLanguage('ja')} className={`px-2 py-1 text-xs rounded transition-all font-bold ${i18n.language === 'ja' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-slate-700'}`}>JA</button>
                   </div>
-                  <span className="text-xl font-bold text-yellow-500">{t('Score')}: {player.score}</span>
+                  <div className="flex flex-col items-end">
+                      <span className="text-xs text-slate-400 uppercase tracking-wider">{t('Score')}</span>
+                      <span className="text-2xl font-bold text-amber-400 font-mono leading-none">{player.score}</span>
+                  </div>
               </div>
           </div>
 
           {/* Owned Gems Section - columns by color */}
-          <div className="flex-1 px-2">
-              <h3 className="text-base text-gray-400 font-semibold mb-4 uppercase tracking-wide">{t('Owned Gems')}</h3>
+          <div className="flex-1 px-2 mb-20 overflow-y-auto">
+              <div className="flex items-baseline justify-between mb-4 border-b border-gray-700 pb-2">
+                  <h3 className="text-base text-gray-400 font-semibold uppercase tracking-wide">{t('Owned Gems')}</h3>
+                  <div className={clsx("text-sm font-bold px-2 py-0.5 rounded-full border", totalTokens > 10 ? "bg-red-900/50 border-red-500 text-red-200" : "bg-slate-800 border-slate-600 text-slate-300")}>
+                      Tokens: {totalTokens} / 10
+                  </div>
+              </div>
               <div className="flex gap-4 justify-start flex-wrap">
                   {/* Each color column: squares (bonuses) on top, circles (tokens) below */}
                   {allGemColors.map(color => {
@@ -391,7 +498,7 @@ export function PlayerController() {
                                   <div
                                       key={`t-${i}`}
                                       className={clsx(
-                                          "w-14 h-14 rounded-full border-3 overflow-hidden",
+                                          "w-16 h-16 rounded-full border-3 overflow-hidden",
                                           GEM_BORDER_COLORS[color]
                                       )}
                                   >
@@ -407,7 +514,7 @@ export function PlayerController() {
                           {Array.from({ length: tokenCounts['gold'] }).map((_, i) => (
                               <div
                                   key={`gold-${i}`}
-                                  className="w-14 h-14 rounded-full border-3 overflow-hidden border-yellow-600"
+                                  className="w-16 h-16 rounded-full border-3 overflow-hidden border-yellow-600"
                               >
                                   <img src={GEM_IMAGES['gold']} alt="gold" className="w-full h-full object-cover scale-150" />
                               </div>
@@ -452,11 +559,11 @@ export function PlayerController() {
 
             <button
                 onClick={submitTokens}
-                disabled={selectedTokens.length === 0}
+                disabled={selectedTokens.length === 0 || !isMyTurn}
                 className="w-full bg-blue-600 py-3 rounded-lg font-bold disabled:opacity-50 hover:bg-blue-700 flex items-center justify-center gap-2"
             >
                 <Check size={20} />
-                {t('Confirm')}
+                {isMyTurn ? t('Confirm') : t('Not your turn')}
             </button>
           </div>
       </div>
@@ -476,13 +583,17 @@ export function PlayerController() {
                          return (
                              <div key={card.id} className="flex-shrink-0 snap-center relative">
                                  <Card card={card} onClick={() => {
-                                     if (affordable) {
-                                         setPaymentCard(card);
-                                         setPaymentModalOpen(true);
-                                     } else {
-                                         alert(t('Not enough resources'));
-                                     }
-                                 }} />
+                                 if (!isMyTurn) {
+                                     showAlert(t('Not your turn'));
+                                     return;
+                                 }
+                                 if (affordable) {
+                                     setPaymentCard(card);
+                                     setPaymentModalOpen(true);
+                                 } else {
+                                     showAlert(t('Not enough resources'));
+                                 }
+                             }} />
                                  {affordable && (
                                      <div className="absolute inset-0 rounded-lg ring-4 ring-green-500 pointer-events-none animate-pulse opacity-50 z-20"></div>
                                  )}
@@ -502,6 +613,10 @@ export function PlayerController() {
                         return (
                             <div key={card.id} className="flex-shrink-0 snap-center relative">
                                 <Card card={card} onClick={() => {
+                                    if (!isMyTurn) {
+                                        showAlert(t('Not your turn'));
+                                        return;
+                                    }
                                     if (affordable) {
                                         setPaymentCard(card);
                                         setPaymentModalOpen(true);
@@ -531,7 +646,8 @@ export function PlayerController() {
                     {gameState.board.cards[level as 1|2|3].map(card => (
                         <div key={card.id} className="flex-shrink-0 snap-center">
                              <Card card={card} onClick={() => {
-                                if(window.confirm(t('Reserve this card?'))) submitReserve(card);
+                                if (!isMyTurn) { showAlert(t('Not your turn')); return; }
+                                submitReserve(card);
                             }} />
                         </div>
                     ))}
@@ -541,21 +657,123 @@ export function PlayerController() {
       </div>
   );
 
+  const DiscardTokensView = () => {
+      const [toDiscard, setToDiscard] = useState<Record<string, number>>({});
+      const currentTokens: Record<string, number> = {};
+      let total = 0;
+      Object.entries(player.tokens).forEach(([k, v]) => {
+          if ((v as number) > 0) {
+              currentTokens[k] = v as number;
+              total += v as number;
+          }
+      });
+
+      const discardCount = Object.values(toDiscard).reduce((a,b)=>a+b, 0);
+      const remaining = total - discardCount;
+      const valid = remaining <= 10;
+
+      const handleAdjust = (color: string, delta: number) => {
+           const current = toDiscard[color] || 0;
+           const owned = currentTokens[color] || 0;
+           const newValue = current + delta;
+
+           if (newValue < 0) return;
+           if (newValue > owned) return;
+
+           setToDiscard({ ...toDiscard, [color]: newValue });
+      };
+
+      const submitDiscard = () => {
+          sendAction({ type: 'DISCARD_TOKENS', payload: { tokens: toDiscard } });
+          setCurrentView('DASHBOARD');
+      };
+
+      return (
+          <div className="space-y-4 p-4 bg-red-900/20 rounded-xl border border-red-500/50">
+               <h3 className="text-xl font-bold text-red-400 text-center">{t('Too Many Tokens!')}</h3>
+               <p className="text-center text-gray-300 mb-4">{t('You have')} {total} {t('tokens')}. {t('Discard until')} 10.</p>
+
+               <div className="flex justify-center text-4xl font-bold mb-4">
+                   <span className={clsx(valid ? "text-green-500" : "text-red-500")}>{remaining}</span>
+                   <span className="text-gray-500">/ 10</span>
+               </div>
+
+               <div className="space-y-2">
+                   {Object.entries(currentTokens).map(([color, count]) => (
+                       <div key={color} className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                           <div className="flex items-center gap-3">
+                               <div className={clsx("w-8 h-8 rounded-full border-2 overflow-hidden", GEM_BORDER_COLORS[color as GemColor] || 'border-yellow-600')}>
+                                   <img src={GEM_IMAGES[color as GemColor]} className="w-full h-full object-cover scale-150" />
+                               </div>
+                               <span className="font-bold text-gray-300">x {count}</span>
+                           </div>
+
+                           <div className="flex items-center gap-3">
+                               <button onClick={() => handleAdjust(color, -1)} className="p-2 bg-gray-700 rounded text-white"><Minus size={16}/></button>
+                               <span className="w-6 text-center font-bold">{toDiscard[color] || 0}</span>
+                               <button onClick={() => handleAdjust(color, 1)} className="p-2 bg-gray-700 rounded text-white"><Plus size={16}/></button>
+                           </div>
+                       </div>
+                   ))}
+               </div>
+
+               <button
+                   onClick={submitDiscard}
+                   disabled={!valid}
+                   className="w-full py-4 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl mt-4"
+               >
+                   {t('Discard Selected')}
+               </button>
+          </div>
+      );
+  };
+
+  if (gameState.gameEnded) {
+    const winner = gameState.players.find(p => p.id === gameState.winner);
+    const isWinner = winner?.id === playerId;
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4 text-center gap-6">
+            <h1 className="text-5xl font-bold mb-4 text-yellow-500 drop-shadow-lg">{t('Game Over')}</h1>
+            <div className="text-3xl mb-8 font-serif">
+                {isWinner ? <span className="text-green-400 animate-pulse">{t('You Won!')}</span> : <span className="text-blue-300">{winner?.name} {t('Won')}</span>}
+            </div>
+
+            <div className="flex flex-col gap-2 bg-gray-800 p-6 rounded-xl border border-gray-700 w-full max-w-md">
+                <h3 className="text-xl font-bold mb-4 text-gray-400">{t('Final Score')}</h3>
+                {gameState.players.sort((a,b) => b.score - a.score).map((p, i) => (
+                    <div key={p.id} className="flex justify-between items-center border-b border-gray-700 last:border-0 py-2">
+                        <span className={clsx("font-bold text-lg", p.id === playerId ? "text-yellow-400" : "text-gray-300")}>
+                            {i+1}. {p.name}
+                        </span>
+                        <span className="font-mono text-xl">{p.score}</span>
+                    </div>
+                ))}
+            </div>
+
+            <button onClick={() => navigate('/')} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xl shadow-lg transition-transform hover:scale-105">
+                {t('Back to Home')}
+            </button>
+        </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* App Header - only show back button when not on dashboard */}
       {currentView !== 'DASHBOARD' && (
           <div className="bg-gray-800 p-4 shadow-md flex items-center">
               <button onClick={() => {
+                  if (currentView === 'DISCARD_TOKENS') return; // Cannot go back
                   setCurrentView('DASHBOARD');
                   setSelectedTokens([]);
-              }} className="mr-4 text-gray-300">
+              }} className={clsx("mr-4 text-gray-300", currentView === 'DISCARD_TOKENS' && "opacity-0 pointer-events-none")}>
                   <ArrowLeft size={24} />
               </button>
              <div className="flex-1 text-center font-bold">
                 {currentView === 'TAKE_GEMS' && t('Take Tokens')}
                 {currentView === 'BUY_CARD' && t('Buy Card')}
                 {currentView === 'RESERVE' && t('Reserve')}
+                {currentView === 'DISCARD_TOKENS' && t('Discard Tokens')}
              </div>
           </div>
       )}
@@ -572,6 +790,7 @@ export function PlayerController() {
          {currentView === 'TAKE_GEMS' && <TakeGemsView />}
          {currentView === 'BUY_CARD' && <BuyCardView />}
          {currentView === 'RESERVE' && <ReserveView />}
+         {currentView === 'DISCARD_TOKENS' && <DiscardTokensView />}
       </div>
 
       {/* Turn indicator + Fixed Bottom Action Bar (only on dashboard) */}
@@ -592,27 +811,24 @@ export function PlayerController() {
               {/* Action Buttons - 4 in a row */}
               <div className="bg-gray-800 border-t border-gray-700 p-2 flex gap-2">
                   <button
-                      disabled={!isMyTurn}
                       onClick={() => setCurrentView('TAKE_GEMS')}
-                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 hover:bg-gray-600 transition border-2 border-gray-600"
                   >
                       <Gem size={28} />
                       <span className="text-[10px] font-bold">{t('Take')}</span>
                   </button>
 
                   <button
-                      disabled={!isMyTurn}
                       onClick={() => setCurrentView('BUY_CARD')}
-                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 hover:bg-gray-600 transition border-2 border-gray-600"
                   >
                       <ShoppingCart size={28} />
                       <span className="text-[10px] font-bold">{t('Buy')}</span>
                   </button>
 
                   <button
-                      disabled={!isMyTurn}
                       onClick={() => setCurrentView('RESERVE')}
-                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-600 transition border-2 border-gray-600"
+                      className="flex-1 bg-gray-700 p-3 rounded-xl flex flex-col items-center gap-1 hover:bg-gray-600 transition border-2 border-gray-600"
                   >
                       <Wallet size={28} />
                       <span className="text-[10px] font-bold">{t('Reserve')}</span>
@@ -620,6 +836,37 @@ export function PlayerController() {
               </div>
           </div>
       )}
+
+      {/* Global Dialog */}
+      <Modal
+          isOpen={dialog.isOpen}
+          onClose={closeDialog}
+          title={dialog.title}
+          maxWidth="max-w-sm"
+          footer={
+              <div className="flex justify-end gap-3 w-full">
+                  {dialog.type === 'confirm' && (
+                      <button
+                          onClick={closeDialog}
+                          className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-bold transition-colors"
+                      >
+                          {t('Cancel')}
+                      </button>
+                  )}
+                  <button
+                      onClick={() => {
+                          if (dialog.onConfirm) dialog.onConfirm();
+                          closeDialog();
+                      }}
+                      className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold transition-colors"
+                  >
+                      OK
+                  </button>
+              </div>
+          }
+      >
+          <p className="text-gray-300 text-lg">{dialog.message}</p>
+      </Modal>
     </div>
   );
 }

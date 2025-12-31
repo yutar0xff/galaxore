@@ -111,6 +111,17 @@ export class SocketServer {
         const room = this.rooms.get(roomId);
         if (!room || !room.game) return;
 
+        // Allow host/spectator to set winning score
+        if (action.type === 'SET_WINNING_SCORE') {
+          try {
+            room.game.setWinningScore(action.payload.score);
+            this.broadcastState(roomId);
+          } catch (e: any) {
+            socket.emit(EVENTS.ERROR, { message: e.message });
+          }
+          return;
+        }
+
         // Find userId from socket.id
         let userId: string | undefined;
         for (const [uid, sid] of room.playerSockets.entries()) {
@@ -135,6 +146,9 @@ export class SocketServer {
               break;
             case 'BUY_CARD':
               room.game.buyCard(userId, action.payload.cardId, action.payload.payment);
+              break;
+            case 'DISCARD_TOKENS':
+              room.game.discardTokens(userId, action.payload.tokens);
               break;
           }
           this.broadcastState(roomId);

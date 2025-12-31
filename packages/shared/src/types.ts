@@ -49,9 +49,19 @@ export interface GameState {
   turn: number;
   winner: string | null; // Player ID
   gameEnded: boolean;
+  phase: 'NORMAL' | 'DISCARDING';
+  lastAction: LastActionInfo | null;
+  winningScore: number;
 }
 
-export type ActionType = 'TAKE_GEMS' | 'RESERVE_CARD' | 'BUY_CARD';
+export interface LastActionInfo {
+  type: ActionType;
+  playerName: string;
+  card?: Card; // Reserved or bought card
+  tokens?: { [key in TokenColor]?: number }; // Tokens taken or discarded
+}
+
+export type ActionType = 'TAKE_GEMS' | 'RESERVE_CARD' | 'BUY_CARD' | 'DISCARD_TOKENS' | 'SET_WINNING_SCORE';
 
 export interface Action {
   type: ActionType;
