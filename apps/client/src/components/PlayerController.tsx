@@ -631,7 +631,16 @@ export function PlayerController() {
                 </div>
             </div>
           ))}
-          {paymentModalOpen && paymentCard && <PaymentModal card={paymentCard} player={player} t={t} onSubmit={submitBuy} onClose={() => { setPaymentModalOpen(false); setPaymentCard(null); }} />}
+          {paymentModalOpen && paymentCard && (
+            <PaymentModal
+              card={paymentCard}
+              player={player}
+              t={t}
+              isMyTurn={isMyTurn}
+              onSubmit={submitBuy}
+              onClose={() => { setPaymentModalOpen(false); setPaymentCard(null); }}
+            />
+          )}
       </div>
   );
 

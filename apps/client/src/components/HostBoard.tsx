@@ -82,14 +82,13 @@ export function HostBoard() {
 
   const handleLeave = () => {
       showConfirm(t('Are you sure you want to leave?'), () => {
+          resetGame();
           navigate('/');
       });
   };
 
   const handleReset = () => {
-      showConfirm(t('Are you sure you want to reset the game?'), () => {
-          resetGame();
-      });
+      resetGame();
   };
 
   if (!gameState) {
