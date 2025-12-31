@@ -7,17 +7,18 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@local-splendor/shared": "workspace:*",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "socket.io": "^4.6.1",
-    "@local-splendor/shared": "workspace:*",
-    "uuid": "^9.0.0",
-    "cors": "^2.8.5"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "@types/node": "^18.15.11",
     "@types/uuid": "^9.0.1",
-    "@types/cors": "^2.8.13",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0"

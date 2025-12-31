@@ -3,6 +3,7 @@ import { createServer } from 'http';
 import cors from 'cors';
 import { SocketServer } from './socket';
 import os from 'os';
+import 'dotenv/config';
 
 const app = express();
 app.use(cors());
@@ -13,6 +14,10 @@ new SocketServer(httpServer);
 const PORT = 3000;
 
 function getIpAddress() {
+  if (process.env.HOST_IP) {
+    return process.env.HOST_IP;
+  }
+
   const interfaces = os.networkInterfaces();
   for (const devName in interfaces) {
     const iface = interfaces[devName];
