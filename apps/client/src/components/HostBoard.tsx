@@ -179,8 +179,8 @@ export function HostBoard() {
                ))}
            </div>
 
-           {/* Right: Players list */}
-           <div className="w-[420px] flex flex-col gap-5 h-full">
+                   {/* Right: Players list */}
+                   <div className="w-[520px] flex flex-col gap-5 h-full">
                {players.map((p, idx) => {
                    // Count card bonuses by gem color
                    const bonuses: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };

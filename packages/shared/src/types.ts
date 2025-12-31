@@ -17,6 +17,7 @@ export interface Noble {
   id: string;
   points: number;
   requirements: Cost; // Bonus gems required
+  imageIndex?: number; // 0-5, assigned at game start
 }
 
 export interface Player {

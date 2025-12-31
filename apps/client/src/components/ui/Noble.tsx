@@ -11,6 +11,11 @@ import onyxImg from '../../assets/gems/onyx.png';
 
 // Import noble images
 import man1Img from '../../assets/nobles/man1.png';
+import man2Img from '../../assets/nobles/man2.png';
+import man3Img from '../../assets/nobles/man3.png';
+import woman1Img from '../../assets/nobles/woman1.png';
+import woman2Img from '../../assets/nobles/woman2.png';
+import woman3Img from '../../assets/nobles/woman3.png';
 
 const GEM_BORDER_COLORS: Record<GemColor, string> = {
   emerald: 'border-green-700',
@@ -30,7 +35,7 @@ const GEM_IMAGES: Record<GemColor, string> = {
 };
 
 // Noble images pool
-const NOBLE_IMAGES = [man1Img];
+const NOBLE_IMAGES = [man1Img, man2Img, man3Img, woman1Img, woman2Img, woman3Img];
 
 type NobleSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -44,10 +49,10 @@ const NOBLE_SIZES = {
 export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSize }) {
   const s = NOBLE_SIZES[size];
 
-  // Deterministic image selection based on noble ID
-  // Assuming noble.id is like 'noble-1', 'noble-2' etc.
-  const idNum = parseInt(noble.id.split('-')[1] || '0', 10);
-  const nobleImg = NOBLE_IMAGES[idNum % NOBLE_IMAGES.length];
+  // Use assigned image index or fallback
+  const nobleImg = noble.imageIndex !== undefined
+      ? NOBLE_IMAGES[noble.imageIndex % NOBLE_IMAGES.length]
+      : NOBLE_IMAGES[parseInt(noble.id.split('-')[1] || '0', 10) % NOBLE_IMAGES.length];
 
   return (
     <div className={clsx(
