@@ -7,7 +7,8 @@ export const EVENTS = {
   UPDATE_GAME_STATE: 'update_game_state',
   ERROR: 'error',
   DISCONNECT: 'disconnect',
-  RESET_GAME: 'reset_game', // Added
+  RESET_GAME: 'reset_game',
+  GAME_RESET: 'game_reset', // Notification to clients that game was reset
 };
 
 export const GEM_COLORS: TokenColor[] = ['emerald', 'sapphire', 'ruby', 'diamond', 'onyx', 'gold'];

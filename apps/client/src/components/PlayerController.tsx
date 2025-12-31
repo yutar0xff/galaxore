@@ -1,20 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { Card } from './ui/Card';
-import { Token } from './ui/Token';
+import { Token, GEM_IMAGES } from './ui/Token';
 import { TokenColor, GemColor, Card as CardType, GEM_COLORS } from '@local-splendor/shared';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { Gem, Coins, Hand, ShoppingCart, ArrowLeft, Check, LogOut, Wallet } from 'lucide-react';
+
+const GEM_BORDER_COLORS: Record<GemColor | 'gold', string> = {
+  emerald: 'border-green-700',
+  sapphire: 'border-blue-700',
+  ruby: 'border-red-700',
+  diamond: 'border-gray-400',
+  onyx: 'border-gray-600',
+  gold: 'border-yellow-600',
+};
 
 type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE' | 'BUY_RESERVED';
 
 export function PlayerController() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const roomId = searchParams.get('roomId');
-  const { gameState, playerId, sendAction, error } = useGame(roomId);
+
+  const handleGameReset = () => {
+    alert(t('Game has been reset by host'));
+    navigate('/');
+  };
+
+  const { gameState, playerId, sendAction, error, wasReset } = useGame(roomId, { onGameReset: handleGameReset });
 
   const [currentView, setCurrentView] = useState<ActionView>('DASHBOARD');
   const [selectedTokens, setSelectedTokens] = useState<GemColor[]>([]);
@@ -87,6 +103,68 @@ export function PlayerController() {
       setCurrentView('DASHBOARD');
   };
 
+  // --- Components ---
+
+  const ResourcesHeader = () => {
+      const tokenCounts: Record<string, number> = {};
+      Object.entries(player.tokens).forEach(([color, count]) => {
+          tokenCounts[color] = count as number;
+      });
+
+      const bonusCounts: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+      player.cards.forEach(card => { bonusCounts[card.gem]++; });
+
+      const allGemColors: GemColor[] = ['emerald', 'sapphire', 'ruby', 'diamond', 'onyx'];
+
+      return (
+        <div className="bg-gray-800 p-3 rounded-xl mb-4 overflow-x-auto border border-gray-700">
+           <div className="flex gap-4 min-w-min mx-auto justify-center">
+              {allGemColors.map(color => {
+                 const bonus = bonusCounts[color] || 0;
+                 const token = tokenCounts[color] || 0;
+
+                 return (
+                    <div key={color} className="flex flex-col items-center gap-2">
+                        {/* Bonus (Square) */}
+                        <div className="relative">
+                            <div className={clsx("w-10 h-10 rounded-sm border-2 overflow-hidden", GEM_BORDER_COLORS[color], bonus === 0 && "opacity-30 grayscale")}>
+                                <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                            </div>
+                            <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-500 shadow-md">
+                                {bonus}
+                            </span>
+                        </div>
+
+                        {/* Token (Circle) */}
+                         <div className="relative">
+                            <div className={clsx("w-10 h-10 rounded-full border-2 overflow-hidden", GEM_BORDER_COLORS[color], token === 0 && "opacity-30 grayscale")}>
+                                <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                            </div>
+                            <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-500 shadow-md">
+                                {token}
+                            </span>
+                        </div>
+                    </div>
+                 );
+              })}
+
+              {/* Gold Token */}
+               <div className="flex flex-col items-center gap-2 justify-end">
+                   <div className="w-10 h-10 opacity-0"></div> {/* Spacer for alignment with bonus row */}
+                   <div className="relative">
+                        <div className={clsx("w-10 h-10 rounded-full border-2 border-yellow-600 overflow-hidden", (!tokenCounts['gold']) && "opacity-30 grayscale")}>
+                            <img src={GEM_IMAGES['gold']} alt="gold" className="w-full h-full object-cover scale-150" />
+                        </div>
+                         <span className="absolute -bottom-2 -right-2 bg-slate-900 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-500 shadow-md">
+                            {tokenCounts['gold'] || 0}
+                         </span>
+                   </div>
+               </div>
+           </div>
+        </div>
+      );
+  };
+
   // --- Sub Views ---
 
   const Dashboard = () => {
@@ -122,39 +200,43 @@ export function PlayerController() {
 
                       return (
                           <div key={color} className="flex flex-col gap-2 items-center">
-                              {/* Bonuses - squares */}
+                              {/* Bonuses - squares with border */}
                               {Array.from({ length: bonus }).map((_, i) => (
                                   <div
                                       key={`b-${i}`}
                                       className={clsx(
-                                          "w-14 h-14 rounded-md border-3",
-                                          getGemBg(color),
-                                          getGemBorder(color)
+                                          "w-14 h-14 rounded-md border-3 overflow-hidden",
+                                          GEM_BORDER_COLORS[color]
                                       )}
-                                  />
+                                  >
+                                      <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                                  </div>
                               ))}
-                              {/* Tokens - circles */}
+                              {/* Tokens - circles with border */}
                               {Array.from({ length: token }).map((_, i) => (
                                   <div
                                       key={`t-${i}`}
                                       className={clsx(
-                                          "w-14 h-14 rounded-full border-3",
-                                          getGemBg(color),
-                                          getGemBorder(color)
+                                          "w-14 h-14 rounded-full border-3 overflow-hidden",
+                                          GEM_BORDER_COLORS[color]
                                       )}
-                                  />
+                                  >
+                                      <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                                  </div>
                               ))}
                           </div>
                       );
                   })}
-                  {/* Gold tokens column */}
+                  {/* Gold tokens column - circles with border */}
                   {(tokenCounts['gold'] || 0) > 0 && (
                       <div className="flex flex-col gap-2 items-center">
                           {Array.from({ length: tokenCounts['gold'] }).map((_, i) => (
                               <div
                                   key={`gold-${i}`}
-                                  className="w-14 h-14 rounded-full border-3 bg-yellow-400 border-yellow-600"
-                              />
+                                  className="w-14 h-14 rounded-full border-3 overflow-hidden border-yellow-600"
+                              >
+                                  <img src={GEM_IMAGES['gold']} alt="gold" className="w-full h-full object-cover scale-150" />
+                              </div>
                           ))}
                       </div>
                   )}
@@ -167,7 +249,11 @@ export function PlayerController() {
 
   const TakeGemsView = () => (
       <div className="space-y-4">
+          {/* Current Owned Tokens Section */}
+          <ResourcesHeader />
+
           <div className="bg-gray-800 p-4 rounded-xl">
+             <h3 className="text-gray-400 text-sm font-bold mb-4 uppercase tracking-wide text-center">{t('Select Tokens to Take')}</h3>
              <div className="flex flex-wrap gap-4 justify-center mb-6">
                 {(['emerald', 'sapphire', 'ruby', 'diamond', 'onyx'] as TokenColor[]).map(color => (
                     <div key={color} className={`relative transition-all duration-200 ${selectedTokens.includes(color as GemColor) ? 'scale-110 ring-4 ring-white rounded-full' : ''}`}>
@@ -203,7 +289,8 @@ export function PlayerController() {
   );
 
   const BuyCardView = () => (
-      <div className="space-y-8">
+      <div className="space-y-4">
+          <ResourcesHeader />
           {[1, 2, 3].map(level => (
             <div key={level}>
                 <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
@@ -222,8 +309,9 @@ export function PlayerController() {
   );
 
   const ReserveView = () => (
-      <div className="space-y-8">
-          <p className="text-gray-400 text-sm">{t('Select a card to reserve')}</p>
+      <div className="space-y-4">
+          <ResourcesHeader />
+          <p className="text-gray-400 text-sm text-center">{t('Select a card to reserve')}</p>
           {[1, 2, 3].map(level => (
             <div key={level}>
                 <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
@@ -243,6 +331,7 @@ export function PlayerController() {
 
   const BuyReservedView = () => (
       <div className="space-y-4">
+          <ResourcesHeader />
           <div className="flex flex-wrap gap-4 justify-center">
              {player.reserved.map(card => (
                  <Card key={card.id} card={card} onClick={() => {
@@ -351,28 +440,4 @@ export function PlayerController() {
       )}
     </div>
   );
-}
-
-function getGemBg(color: GemColor | string) {
-     switch(color) {
-        case 'emerald': return 'bg-green-500';
-        case 'sapphire': return 'bg-blue-500';
-        case 'ruby': return 'bg-red-500';
-        case 'diamond': return 'bg-gray-100';
-        case 'onyx': return 'bg-gray-800';
-        case 'gold': return 'bg-yellow-400';
-        default: return 'bg-gray-500';
-    }
-}
-
-function getGemBorder(color: GemColor | string) {
-     switch(color) {
-        case 'emerald': return 'border-green-700';
-        case 'sapphire': return 'border-blue-700';
-        case 'ruby': return 'border-red-700';
-        case 'diamond': return 'border-gray-400';
-        case 'onyx': return 'border-gray-600';
-        case 'gold': return 'border-yellow-600';
-        default: return 'border-gray-500';
-    }
 }
