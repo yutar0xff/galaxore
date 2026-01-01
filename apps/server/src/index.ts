@@ -6,12 +6,24 @@ import os from 'os';
 import 'dotenv/config';
 
 const app = express();
-app.use(cors());
+
+// CORS設定: 環境変数で許可するオリジンを指定可能
+// 未設定の場合は全許可（ローカル開発用）
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : '*';
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+}));
 
 const httpServer = createServer(app);
 new SocketServer(httpServer);
 
-const PORT = 3000;
+// ポート番号: Railwayは自動的にPORT環境変数を設定
+// 未設定の場合は3000を使用（ローカル環境用）
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 function getIpAddress() {
   if (process.env.HOST_IP) {
@@ -42,7 +54,13 @@ app.get('/api/ip', (req, res) => {
   });
 });
 
+// 本番環境ではRailwayが自動的にホストを設定するため、
+// ローカル環境のみIPアドレスを表示
 httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-  console.log(`Network access: http://${wslIp}:${PORT}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Network access: http://${wslIp}:${PORT}`);
+  } else {
+    console.log(`Server running on port ${PORT}`);
+  }
 });
