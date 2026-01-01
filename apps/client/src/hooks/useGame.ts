@@ -17,7 +17,7 @@ const getUserId = () => {
 
 export const useGame = (
   roomId: string | null,
-  options: { asSpectator?: boolean; onGameReset?: () => void } = {},
+  options: { asBoard?: boolean; onGameReset?: () => void } = {},
 ) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +26,8 @@ export const useGame = (
   const [lobbyInfo, setLobbyInfo] = useState<{
     players: number;
     playerNames?: string[];
-    spectators: number;
-    spectatorNames?: string[];
+    boardUsers: number;
+    boardUserNames?: string[];
   } | null>(null);
   const [wasReset, setWasReset] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -58,7 +58,7 @@ export const useGame = (
             setPlayerId(userIdRef.current);
             currentSocket?.emit(EVENTS.JOIN_ROOM, {
               roomId,
-              asSpectator: options.asSpectator,
+              asBoard: options.asBoard,
               userId: userIdRef.current,
               name: userName,
             });
@@ -78,8 +78,8 @@ export const useGame = (
         const onLobbyUpdate = (info: {
           players: number;
           playerNames?: string[];
-          spectators: number;
-          spectatorNames?: string[];
+          boardUsers: number;
+          boardUserNames?: string[];
         }) => {
           if (isMounted) setLobbyInfo(info);
         };
@@ -128,7 +128,7 @@ export const useGame = (
         currentSocket.disconnect();
       }
     };
-  }, [roomId, options.asSpectator]);
+  }, [roomId, options.asBoard]);
 
   const startGame = () => {
     socketRef.current?.emit(EVENTS.START_GAME, { roomId });

@@ -39,13 +39,14 @@ export function PlayerController() {
   const { dialog, showAlert, showConfirm, closeDialog } = useDialog();
 
   const handleGameReset = () => {
-    showAlert(t("Game has been reset by host"));
+    showAlert(t("Game has been reset by board"));
     navigate("/");
   };
 
-  const { gameState, playerId, lobbyInfo, sendAction, error, setError } = useGame(roomId, {
-    onGameReset: handleGameReset,
-  });
+  const { gameState, playerId, lobbyInfo, sendAction, error, setError } =
+    useGame(roomId, {
+      onGameReset: handleGameReset,
+    });
 
   const [currentView, setCurrentView] = useState<ActionView>("DASHBOARD");
   const [selectedTokens, setSelectedTokens] = useState<GemColor[]>([]);
@@ -114,68 +115,69 @@ export function PlayerController() {
           ← {t("Back to Home")}
         </button>
 
-        <h2 className="text-2xl font-bold">{t("Connecting to Room...")}</h2>
-        <div className="text-gray-400">
-          {t("Room ID")}: {roomId}
-        </div>
-        <LoadingSpinner />
-
-        {playerId && !gameState && (
+        {!playerId || !lobbyInfo ? (
+          <>
+            <h2 className="text-2xl font-bold">{t("Connecting to Room...")}</h2>
+            <div className="text-gray-400">
+              {t("Room ID")}: {roomId}
+            </div>
+            <LoadingSpinner />
+          </>
+        ) : (
           <div className="w-full max-w-md space-y-6">
             <div className="text-center">
-              <p className="mb-2 text-green-400 text-xl font-bold">{t("Connected!")}</p>
-              <p className="text-gray-400">{t("Waiting for host to start the game...")}</p>
+              <p className="mb-4 text-xl font-bold text-green-400">
+                {t("Waiting for game to start...")}
+              </p>
+              <LoadingSpinner />
             </div>
 
             {/* プレイヤー一覧 */}
-            {lobbyInfo && (
-              <>
-                <div className="space-y-3">
-                  <div className="text-xl font-bold">
-                    {t("Players")}: {lobbyInfo.players || 0}
-                  </div>
-                  {lobbyInfo.playerNames && lobbyInfo.playerNames.length > 0 ? (
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {lobbyInfo.playerNames.map((name, i) => (
-                        <span
-                          key={i}
-                          className="rounded-full border border-blue-500/50 bg-blue-600/20 px-4 py-2 font-bold text-blue-300"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500">
-                      {t("No players yet")}
-                    </div>
-                  )}
+            <div className="space-y-3">
+              <div className="text-xl font-bold">
+                {t("Players")}: {lobbyInfo.players || 0}
+              </div>
+              {lobbyInfo.playerNames && lobbyInfo.playerNames.length > 0 ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {lobbyInfo.playerNames.map((name, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-blue-500/50 bg-blue-600/20 px-4 py-2 font-bold text-blue-300"
+                    >
+                      {name}
+                    </span>
+                  ))}
                 </div>
+              ) : (
+                <div className="text-center text-gray-500">
+                  {t("No players yet")}
+                </div>
+              )}
+            </div>
 
-                {/* ボードユーザー一覧 */}
-                <div className="space-y-3">
-                  <div className="text-xl font-bold">
-                    {t("Board Users")}: {lobbyInfo.spectators || 0}
-                  </div>
-                  {lobbyInfo.spectatorNames && lobbyInfo.spectatorNames.length > 0 ? (
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {lobbyInfo.spectatorNames.map((name, i) => (
-                        <span
-                          key={i}
-                          className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500">
-                      {t("No board users yet")}
-                    </div>
-                  )}
+            {/* ボードユーザー一覧 */}
+            <div className="space-y-3">
+              <div className="text-xl font-bold">
+                {t("Board Users")}: {lobbyInfo.boardUsers || 0}
+              </div>
+              {lobbyInfo.boardUserNames &&
+              lobbyInfo.boardUserNames.length > 0 ? (
+                <div className="flex flex-wrap justify-center gap-2">
+                  {lobbyInfo.boardUserNames.map((name, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
+                    >
+                      {name}
+                    </span>
+                  ))}
                 </div>
-              </>
-            )}
+              ) : (
+                <div className="text-center text-gray-500">
+                  {t("No board users yet")}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

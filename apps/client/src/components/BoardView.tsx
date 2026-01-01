@@ -11,11 +11,11 @@ import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import useSound from "use-sound";
 import { GEM_ORDER } from "../constants/gems";
-import { ControlsSection } from "./host/ControlsSection";
-import { NoblesSection } from "./host/NoblesSection";
-import { ResourcesSection } from "./host/ResourcesSection";
-import { CardsSection } from "./host/CardsSection";
-import { PlayersList } from "./host/PlayersList";
+import { ControlsSection } from "./board/ControlsSection";
+import { NoblesSection } from "./board/NoblesSection";
+import { ResourcesSection } from "./board/ResourcesSection";
+import { CardsSection } from "./board/CardsSection";
+import { PlayersList } from "./board/PlayersList";
 import { calculateNoblesVisited, calculateBonuses } from "../utils/game";
 import { changeLanguage as changeLanguageUtil } from "../utils/i18n";
 import { useBeforeUnload } from "../hooks/useBeforeUnload";
@@ -32,14 +32,14 @@ import {
 import { CHANGE_SOUND } from "../constants/sounds";
 import { setupAudioContextOnInteraction } from "../utils/audio";
 
-export function HostBoard() {
+export function BoardView() {
   const { t, i18n } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get("roomId");
   const { gameState, lobbyInfo, startGame, resetGame, sendAction } = useGame(
     roomId,
-    { asSpectator: true },
+    { asBoard: true },
   );
   const [serverIp, setServerIp] = useState<string | null>(null);
   const [playChangeSound] = useSound(CHANGE_SOUND, { volume: 0.5 });
@@ -162,11 +162,12 @@ export function HostBoard() {
           {/* ボードユーザー一覧 */}
           <div className="space-y-3">
             <div className="text-2xl font-bold">
-              {t("Board Users")}: {lobbyInfo?.spectators || 0}
+              {t("Board Users")}: {lobbyInfo?.boardUsers || 0}
             </div>
-            {lobbyInfo?.spectatorNames && lobbyInfo.spectatorNames.length > 0 ? (
+            {lobbyInfo?.boardUserNames &&
+            lobbyInfo.boardUserNames.length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2">
-                {lobbyInfo.spectatorNames.map((name, i) => (
+                {lobbyInfo.boardUserNames.map((name, i) => (
                   <span
                     key={i}
                     className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
@@ -221,7 +222,7 @@ export function HostBoard() {
           gameState={gameState}
           onViewBoard={() => setShowResults(false)}
           onReset={handleReset}
-          variant="host"
+          variant="board"
         />
       )}
 
