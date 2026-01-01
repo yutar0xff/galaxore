@@ -75,6 +75,7 @@ const resources = {
       "Select up to 3 different colors": "Select up to 3 different colors",
       "Select 3 different colors or 2 same color": "Select 3 different colors or 2 same color",
       "Nobles": "Nobles",
+      "Available to Develop": "Available",
     }
   },
   ja: {
@@ -149,6 +150,7 @@ const resources = {
       "Select up to 3 different colors": "異なる色を3枚まで選択可能",
       "Select 3 different colors or 2 same color": "異なる3色、または同じ色2枚を選択してください",
       "Nobles": "Nobles",
+      "Available to Develop": "開拓可能",
     }
   }
 };

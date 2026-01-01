@@ -59,7 +59,8 @@ export function HostBoard() {
 
   const joinHost = serverIp || window.location.hostname;
   const joinUrl = roomId
-      ? `${window.location.protocol}//${joinHost}:${window.location.port}/game?roomId=${roomId}`
+      ? `${window.location.protocol}//${joinHost}:${window.location.port}`
+      // ? `${window.location.protocol}//${joinHost}:${window.location.port}/game?roomId=${roomId}`
       : '';
 
   const [showResults, setShowResults] = useState(false);
