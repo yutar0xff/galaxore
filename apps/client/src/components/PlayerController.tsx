@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { Modal } from './ui/Modal';
@@ -6,11 +6,13 @@ import { TokenColor, GemColor, Card as CardType } from '@local-splendor/shared';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { Gem, ShoppingCart, ArrowLeft, Wallet } from 'lucide-react';
+import useSound from 'use-sound';
 import { Dashboard } from './player/Dashboard';
 import { TakeGemsView } from './player/TakeGemsView';
 import { BuyCardView } from './player/BuyCardView';
 import { ReserveView } from './player/ReserveView';
 import { DiscardTokensView } from './player/DiscardTokensView';
+import { PlayerListHeader } from './player/PlayerListHeader';
 import { useBeforeUnload } from '../hooks/useBeforeUnload';
 import { useDialog } from '../hooks/useDialog';
 import { GameResultModal } from './ui/GameResultModal';
@@ -18,6 +20,8 @@ import { ErrorBanner } from './ui/ErrorBanner';
 import { LoadingSpinner } from './ui/LoadingSpinner';
 import { MAX_TOKENS } from '../constants/game';
 import { TokenPayment } from '../types/game';
+import { TURN_SOUND } from '../constants/sounds';
+import { setupAudioContextOnInteraction } from '../utils/audio';
 
 type ActionView = 'DASHBOARD' | 'TAKE_GEMS' | 'BUY_CARD' | 'RESERVE' | 'DISCARD_TOKENS';
 
@@ -42,6 +46,8 @@ export function PlayerController() {
   const [paymentCard, setPaymentCard] = useState<CardType | null>(null);
 
   const [showResults, setShowResults] = useState(false);
+  const [playTurnSound] = useSound(TURN_SOUND, { volume: 0.5 });
+  const prevIsMyTurnRef = useRef<boolean | null>(null);
 
   useEffect(() => {
       if (gameState?.gameEnded) {
@@ -50,6 +56,25 @@ export function PlayerController() {
   }, [gameState?.gameEnded]);
 
   useBeforeUnload();
+
+  // iOS対応: 音声コンテキストを有効化
+  useEffect(() => {
+    setupAudioContextOnInteraction();
+  }, []);
+
+  // Play sound when it becomes my turn (with 2 second delay)
+  useEffect(() => {
+    if (gameState && playerId) {
+      const currentIsMyTurn = gameState.players[gameState.currentPlayerIndex].id === playerId;
+      if (prevIsMyTurnRef.current !== null && !prevIsMyTurnRef.current && currentIsMyTurn) {
+        const timeoutId = setTimeout(() => {
+          playTurnSound();
+        }, 2000);
+        return () => clearTimeout(timeoutId);
+      }
+      prevIsMyTurnRef.current = currentIsMyTurn;
+    }
+  }, [gameState?.currentPlayerIndex, playerId, gameState, playTurnSound]);
 
   useEffect(() => {
     if (gameState?.phase === 'DISCARDING' && gameState.players[gameState.currentPlayerIndex].id === playerId) {
@@ -173,6 +198,15 @@ export function PlayerController() {
           </button>
       )}
 
+      {/* Player List Header - Sticky at top */}
+      {gameState && (
+        <PlayerListHeader
+          players={gameState.players}
+          currentPlayerIndex={gameState.currentPlayerIndex}
+          playerId={playerId}
+        />
+      )}
+
       {/* App Header - only show back button when not on dashboard */}
       {currentView !== 'DASHBOARD' && (
           <div className="bg-gray-800 px-6 py-5 shadow-lg flex items-center border-b border-gray-700">
@@ -237,21 +271,15 @@ export function PlayerController() {
          )}
       </div>
 
-      {/* Turn indicator + Fixed Bottom Action Bar (only on dashboard) */}
+      {/* Fixed Bottom Action Bar (only on dashboard) */}
       {currentView === 'DASHBOARD' && (
           <div className="fixed bottom-0 left-0 right-0 z-50">
-              {/* Turn Indicator */}
-              <div className={clsx(
-                  "text-center py-4 font-bold text-2xl border-t shadow-[0_-4px_15px_rgba(0,0,0,0.3)]",
-                  isMyTurn
-                      ? "bg-green-600 text-white border-green-500"
-                      : "bg-gray-800 text-gray-400 border-gray-700"
-              )}>
-                  {isMyTurn
-                      ? t('YOUR TURN')
-                      : t('Waiting for', { name: gameState.players[gameState.currentPlayerIndex].name })}
-              </div>
-
+              {/* Your Turn Banner */}
+              {isMyTurn && (
+                  <div className="bg-gradient-to-r from-green-600 to-green-700 text-white text-center py-3 px-4 border-t border-green-500 shadow-lg">
+                      <span className="text-lg font-bold">{t('Your Turn')}</span>
+                  </div>
+              )}
               {/* Action Buttons - 4 in a row */}
               <div className="bg-gray-900 border-t border-gray-800 p-3 flex gap-3">
                   <button

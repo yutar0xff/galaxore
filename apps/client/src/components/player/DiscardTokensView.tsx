@@ -6,6 +6,8 @@ import { Minus, Plus } from 'lucide-react';
 import { GEM_BORDER_COLORS_WITH_GOLD, ALL_TOKEN_COLORS } from '../../constants/gems';
 import { GEM_IMAGES } from '../ui/Token';
 import { calculateTokenCounts } from '../../utils/game';
+import { MAX_TOKENS } from '../../constants/game';
+import { TokenPayment } from '../../types/game';
 
 interface DiscardTokensViewProps {
   player: Player;

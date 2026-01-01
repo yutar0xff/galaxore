@@ -76,6 +76,8 @@ const resources = {
       "Select 3 different colors or 2 same color": "Select 3 different colors or 2 same color",
       "Nobles": "Nobles",
       "Available to Develop": "Available",
+      "Current Turn": "Current Turn",
+      "Your Turn": "Your Turn",
     }
   },
   ja: {
@@ -151,6 +153,8 @@ const resources = {
       "Select 3 different colors or 2 same color": "異なる3色、または同じ色2枚を選択してください",
       "Nobles": "Nobles",
       "Available to Develop": "開拓可能",
+      "Current Turn": "手番中",
+      "Your Turn": "あなたのターンです",
     }
   }
 };
