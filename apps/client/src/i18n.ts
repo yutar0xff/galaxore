@@ -45,6 +45,8 @@ const resources = {
       "Are you sure you want to reset the game?":
         "Are you sure you want to reset the game? All progress will be lost.",
       Language: "Language",
+      Settings: "Settings",
+      Goal: "Goal",
       Actions: "Actions",
       "Buy Card": "Develop",
       "Buy Reserved": "Develop Reserved",
@@ -126,6 +128,8 @@ const resources = {
       "Are you sure you want to reset the game?":
         "本当にゲームを終了しますか？進行状況は全て失われます。",
       Language: "Language",
+      Settings: "設定",
+      Goal: "目標",
       Actions: "Actions",
       "Buy Card": "開拓する",
       "Buy Reserved": "予約済みを開拓",

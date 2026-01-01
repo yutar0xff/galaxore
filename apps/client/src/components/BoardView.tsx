@@ -16,8 +16,8 @@ import { NoblesSection } from "./board/NoblesSection";
 import { ResourcesSection } from "./board/ResourcesSection";
 import { CardsSection } from "./board/CardsSection";
 import { PlayersList } from "./board/PlayersList";
+import { SettingsModal } from "./board/SettingsModal";
 import { calculateNoblesVisited, calculateBonuses } from "../utils/game";
-import { changeLanguage as changeLanguageUtil } from "../utils/i18n";
 import { useBeforeUnload } from "../hooks/useBeforeUnload";
 import { useDialog } from "../hooks/useDialog";
 import { GameResultModal } from "./ui/GameResultModal";
@@ -44,6 +44,7 @@ export function BoardView() {
   const [serverIp, setServerIp] = useState<string | null>(null);
   const [playChangeSound] = useSound(CHANGE_SOUND, { volume: 0.5 });
   const prevCurrentPlayerIndexRef = useRef<number | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useBeforeUnload();
 
@@ -242,8 +243,8 @@ export function BoardView() {
         <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
           <ControlsSection
             winningScore={gameState.winningScore}
-            onSetWinningScore={handleSetWinningScore}
             onLeave={handleLeave}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
           <NoblesSection nobles={board.nobles} />
         </div>
@@ -262,6 +263,16 @@ export function BoardView() {
           />
         </div>
       </div>
+
+      {/* Settings Modal */}
+      {gameState && (
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          winningScore={gameState.winningScore}
+          onSetWinningScore={handleSetWinningScore}
+        />
+      )}
 
       {/* Confirm Dialog */}
       <Modal
