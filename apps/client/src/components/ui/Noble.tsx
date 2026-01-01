@@ -1,43 +1,9 @@
 import React from 'react';
 import { Noble as NobleType, GemColor } from '@local-splendor/shared';
 import clsx from 'clsx';
-
-// Import gem images
-import rubyImg from '../../assets/gems/ruby.png';
-import emeraldImg from '../../assets/gems/emerald.png';
-import sapphireImg from '../../assets/gems/sapphire.png';
-import diamondImg from '../../assets/gems/diamond.png';
-import onyxImg from '../../assets/gems/onyx.png';
-
-// Import noble images
-import man1Img from '../../assets/nobles/man1.png';
-import man2Img from '../../assets/nobles/man2.png';
-import man3Img from '../../assets/nobles/man3.png';
-import woman1Img from '../../assets/nobles/woman1.png';
-import woman2Img from '../../assets/nobles/woman2.png';
-import woman3Img from '../../assets/nobles/woman3.png';
-
-const GEM_BORDER_COLORS: Record<GemColor, string> = {
-  emerald: 'border-green-700',
-  sapphire: 'border-blue-700',
-  ruby: 'border-red-700',
-  diamond: 'border-gray-400',
-  onyx: 'border-gray-600',
-};
-
-// Map colors to their images
-const GEM_IMAGES: Record<GemColor, string> = {
-  ruby: rubyImg,
-  emerald: emeraldImg,
-  sapphire: sapphireImg,
-  diamond: diamondImg,
-  onyx: onyxImg,
-};
-
-// Noble images pool
-const NOBLE_IMAGES = [man1Img, man2Img, man3Img, woman1Img, woman2Img, woman3Img];
-
-type NobleSize = 'sm' | 'md' | 'lg' | 'xl';
+import { ComponentSize } from '../../types/ui';
+import { GEM_ORDER, GEM_BORDER_COLORS, GEM_IMAGES } from '../../constants/gems';
+import { NOBLE_IMAGES } from '../../constants/images';
 
 const NOBLE_SIZES = {
   sm: { container: 'w-16 h-20 aspect-[4/5]', points: 'text-base', square: 'w-3 h-3', padding: 'p-1', rowGap: 'gap-0.5', dotGap: 'gap-0.5' },
@@ -46,7 +12,7 @@ const NOBLE_SIZES = {
   xl: { container: 'h-full w-auto max-w-full max-h-full aspect-[11/14] flex-shrink-0', points: 'text-[clamp(2rem,3vw,2.5rem)]', square: 'w-[clamp(20px,2vw,32px)] h-[clamp(20px,2vw,32px)]', padding: 'p-[clamp(0.5rem,1vw,1rem)]', rowGap: 'gap-[clamp(0.25rem,0.5vw,0.5rem)]', dotGap: 'gap-[clamp(0.25rem,0.5vw,0.5rem)]' },
 };
 
-export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSize }) {
+export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: ComponentSize }) {
   const s = NOBLE_SIZES[size];
 
   // Use assigned image index or fallback
@@ -77,8 +43,9 @@ export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSi
 
           {/* Requirements */}
           <div className={clsx("flex flex-col bg-black/40 backdrop-blur-sm p-1 rounded-md border border-white/10 overflow-visible", s.rowGap)}>
-            {Object.entries(noble.requirements).map(([color, count]) => (
-               count > 0 && (
+            {GEM_ORDER.map(color => {
+               const count = noble.requirements[color] || 0;
+               return count > 0 && (
                    <div key={color} className={clsx("flex", s.dotGap)}>
                        {Array.from({ length: count }).map((_, i) => (
                            <div
@@ -86,19 +53,19 @@ export function Noble({ noble, size = 'md' }: { noble: NobleType; size?: NobleSi
                                className={clsx(
                                    "rounded-sm border overflow-hidden shadow-sm",
                                    s.square,
-                                   GEM_BORDER_COLORS[color as GemColor]
+                                   GEM_BORDER_COLORS[color]
                                )}
                            >
                              <img
-                               src={GEM_IMAGES[color as GemColor]}
+                               src={GEM_IMAGES[color]}
                                alt={color}
                                className="w-full h-full object-cover scale-150"
                              />
                            </div>
                        ))}
                    </div>
-               )
-            ))}
+               );
+            })}
           </div>
       </div>
     </div>

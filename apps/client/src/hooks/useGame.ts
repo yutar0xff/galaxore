@@ -71,15 +71,14 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean;
         const onError = ({ message }: { message: string }) => {
           if (isMounted) {
             setError(message);
-            // Clear error after 3s
-            setTimeout(() => setError(null), 3000);
+            // Clear error after ERROR_DISPLAY_DURATION
+            setTimeout(() => setError(null), ERROR_DISPLAY_DURATION);
           }
         };
 
         const onGameReset = () => {
           if (isMounted) {
             setGameState(null);
-            setWasReset(true);
             options.onGameReset?.();
           }
         };
@@ -127,5 +126,5 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean;
     socketRef.current?.emit(EVENTS.GAME_ACTION, { roomId, action });
   };
 
-  return { gameState, error, isConnected, playerId, lobbyInfo, wasReset, startGame, resetGame, sendAction };
+  return { gameState, error, setError, isConnected, playerId, lobbyInfo, startGame, resetGame, sendAction };
 };

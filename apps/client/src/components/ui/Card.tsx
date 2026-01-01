@@ -1,56 +1,10 @@
 import React from 'react';
 import { Card as CardType, GemColor } from '@local-splendor/shared';
 import clsx from 'clsx';
-
-// Import gem images
-import rubyImg from '../../assets/gems/ruby.png';
-import emeraldImg from '../../assets/gems/emerald.png';
-import sapphireImg from '../../assets/gems/sapphire.png';
-import diamondImg from '../../assets/gems/diamond.png';
-import onyxImg from '../../assets/gems/onyx.png';
-
-// Import 5-gem images
-import ruby5Img from '../../assets/gems/ruby5.png';
-import emerald5Img from '../../assets/gems/emerald5.png';
-import sapphire5Img from '../../assets/gems/sapphire5.png';
-import diamond5Img from '../../assets/gems/diamond5.png';
-import onyx5Img from '../../assets/gems/onyx5.png';
-
-const GEM_COLORS: Record<GemColor, string> = {
-  emerald: 'bg-green-500',
-  sapphire: 'bg-blue-500',
-  ruby: 'bg-red-500',
-  diamond: 'bg-gray-100',
-  onyx: 'bg-gray-800',
-};
-
-const GEM_BORDER_COLORS: Record<GemColor, string> = {
-  emerald: 'border-green-700',
-  sapphire: 'border-blue-700',
-  ruby: 'border-red-700',
-  diamond: 'border-gray-400',
-  onyx: 'border-gray-600',
-};
-
-// Map colors to their images (undefined means no image available, fallback to color)
-const GEM_IMAGES: Partial<Record<GemColor, string>> = {
-  ruby: rubyImg,
-  emerald: emeraldImg,
-  sapphire: sapphireImg,
-  diamond: diamondImg,
-  onyx: onyxImg,
-};
-
-// Map colors to their 5-gem images
-const GEM_5_IMAGES: Partial<Record<GemColor, string>> = {
-  ruby: ruby5Img,
-  emerald: emerald5Img,
-  sapphire: sapphire5Img,
-  diamond: diamond5Img,
-  onyx: onyx5Img,
-};
-
-type CardSize = 'sm' | 'md' | 'lg' | 'xl';
+import { ComponentSize } from '../../types/ui';
+import { GEM_ORDER, GEM_BORDER_COLORS, GEM_IMAGES, GEM_5_IMAGES, GEM_COLORS } from '../../constants/gems';
+import { LEVEL_IMAGES } from '../../constants/images';
+import { GEM_THRESHOLD_FOR_5_IMAGE } from '../../constants/game';
 
 const CARD_SIZES = {
   sm: { card: 'w-20 h-28', points: 'text-lg', gem: 'w-5 h-5', costDot: 'w-3 h-3', miniGem: 'w-1 h-1', padding: 'p-1.5', colGap: 'gap-0.5', dotGap: 'gap-0.5' },
@@ -59,15 +13,12 @@ const CARD_SIZES = {
   xl: { card: 'w-[clamp(120px,9vw,220px)] h-full max-h-[22vh] aspect-[2/3]', points: 'text-[clamp(1.5rem,2.2vw,3rem)]', gem: 'w-[clamp(30px,2.5vw,50px)] h-[clamp(30px,2.5vw,50px)]', costDot: 'w-[clamp(15px,1.4vw,25px)] h-[clamp(15px,1.4vw,25px)]', miniGem: 'w-[clamp(5px,0.5vw,8px)] h-[clamp(5px,0.5vw,8px)]', padding: 'p-[1vw]', colGap: 'gap-[0.3vw]', dotGap: 'gap-[0.2vw]' },
 };
 
-// Define gem order for consistent display
-const GEM_ORDER: GemColor[] = ['ruby', 'emerald', 'sapphire', 'diamond', 'onyx'];
-
 // Render gem display for a column - uses 5-gem image when count is 6+
-function renderGemDisplay(count: number, color: GemColor, s: typeof CARD_SIZES['md']) {
+function renderGemDisplay(count: number, color: GemColor) {
   const gemImage = GEM_IMAGES[color];
   const gem5Image = GEM_5_IMAGES[color];
 
-  if (count <= 5) {
+  if (count <= GEM_THRESHOLD_FOR_5_IMAGE) {
     // Show individual gems (5個までは個別表示)
     // 上下左右20%をクロップ: divのサイズを列幅に合わせ（正方形）、画像を1.25倍に拡大してdivでクロップ
     return (
@@ -83,7 +34,7 @@ function renderGemDisplay(count: number, color: GemColor, s: typeof CARD_SIZES['
     );
   } else {
     // 6+ gems: show 5-gem image at bottom, then remaining individual gems above
-    const remainder = count - 5;
+    const remainder = count - GEM_THRESHOLD_FOR_5_IMAGE;
     return (
       <div className="flex flex-col-reverse gap-0.5 h-full w-full">
         {gem5Image && (
@@ -105,18 +56,7 @@ function renderGemDisplay(count: number, color: GemColor, s: typeof CARD_SIZES['
   }
 }
 
-// Import level background images
-import level1Img from '../../assets/mines/level1.png';
-import level2Img from '../../assets/mines/level2.png';
-import level3Img from '../../assets/mines/level3.png';
-
-const LEVEL_IMAGES = {
-  1: level1Img,
-  2: level2Img,
-  3: level3Img,
-};
-
-export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?: () => void; size?: CardSize }) {
+export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?: () => void; size?: ComponentSize }) {
   const s = CARD_SIZES[size];
   const bonusImage = GEM_IMAGES[card.gem];
 
@@ -171,7 +111,7 @@ export function Card({ card, onClick, size = 'md' }: { card: CardType; onClick?:
             const count = color ? (card.cost[color] || 0) : 0;
             return (
               <div key={color || `empty-${i}`} className="flex-1 min-w-0 h-full flex items-end">
-                {count > 0 ? renderGemDisplay(count, color!, s) : null}
+                {count > 0 ? renderGemDisplay(count, color!) : null}
               </div>
             );
           });
@@ -188,7 +128,7 @@ const CARDBACK_SIZES = {
   xl: { card: 'w-[clamp(120px,9vw,220px)] h-full max-h-[22vh] aspect-[2/3]', text: 'text-[clamp(2rem,4vw,4rem)]' },
 };
 
-export function CardBack({ level, size = 'md' }: { level: 1 | 2 | 3; size?: CardSize }) {
+export function CardBack({ level, size = 'md' }: { level: 1 | 2 | 3; size?: ComponentSize }) {
     const s = CARDBACK_SIZES[size];
 
     // Border colors matching the level theme
