@@ -7,8 +7,8 @@ interface Room {
   players: string[]; // userIds
   playerNames: Map<string, string>; // userId -> name
   playerSockets: Map<string, string>; // userId -> socketId
-  spectators: string[]; // socketIds
-  spectatorNames: Map<string, string>; // socketId -> name
+  boardUsers: string[]; // socketIds
+  boardUserNames: Map<string, string>; // socketId -> name
   game?: SplendorGame;
 }
 
@@ -31,16 +31,16 @@ export class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log(`User connected: ${socket.id}`);
 
-      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator, userId, name }: { roomId: string, asSpectator?: boolean, userId?: string, name?: string }) => {
+      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asBoard, userId, name }: { roomId: string, asBoard?: boolean, userId?: string, name?: string }) => {
         let room = this.rooms.get(roomId);
         if (!room) {
-          room = { players: [], playerNames: new Map(), playerSockets: new Map(), spectators: [], spectatorNames: new Map() };
+          room = { players: [], playerNames: new Map(), playerSockets: new Map(), boardUsers: [], boardUserNames: new Map() };
           this.rooms.set(roomId, room);
         }
 
-        if (asSpectator) {
-          room.spectators.push(socket.id);
-          if (name) room.spectatorNames.set(socket.id, name);
+        if (asBoard) {
+          room.boardUsers.push(socket.id);
+          if (name) room.boardUserNames.set(socket.id, name);
         } else {
           // If no userId provided, fallback to socket.id (should not happen with updated client)
           const uid = userId || socket.id;
@@ -78,7 +78,7 @@ export class SocketServer {
         }
 
         socket.join(roomId);
-        console.log(`User ${userId || socket.id} (${name || 'unknown'}) joined room ${roomId} (spectator: ${!!asSpectator})`);
+        console.log(`User ${userId || socket.id} (${name || 'unknown'}) joined room ${roomId} (board user: ${!!asBoard})`);
 
         // Notify everyone in room about new player count or game state
         this.broadcastState(roomId);
@@ -107,9 +107,9 @@ export class SocketServer {
         const room = this.rooms.get(roomId);
         if (!room) return;
 
-        // Only allow host (spectator) or players to reset?
-        // For local game, anyone in room can reset is probably fine or restrict to host.
-        // Assuming host is usually a spectator.
+        // Only allow board user or players to reset?
+        // For local game, anyone in room can reset is probably fine or restrict to board user.
+        // Assuming board user is usually the one managing the board.
 
         room.game = undefined;
         // Clear players so they need to re-join
@@ -125,7 +125,7 @@ export class SocketServer {
         const room = this.rooms.get(roomId);
         if (!room || !room.game) return;
 
-        // Allow host/spectator to set winning score
+        // Allow board user to set winning score
         if (action.type === 'SET_WINNING_SCORE') {
           try {
             room.game.setWinningScore(action.payload.score);
@@ -175,11 +175,11 @@ export class SocketServer {
         console.log(`User disconnected: ${socket.id}`);
         // Cleanup logic (remove from room, etc.) - Simplified for now
         this.rooms.forEach((room, roomId) => {
-           // If spectator, remove
-           const wasSpectator = room.spectators.includes(socket.id);
-           if (wasSpectator) {
-             room.spectators = room.spectators.filter(p => p !== socket.id);
-             room.spectatorNames.delete(socket.id);
+           // If board user, remove
+           const wasBoardUser = room.boardUsers.includes(socket.id);
+           if (wasBoardUser) {
+             room.boardUsers = room.boardUsers.filter(p => p !== socket.id);
+             room.boardUserNames.delete(socket.id);
              this.broadcastState(roomId);
            }
 
@@ -217,8 +217,8 @@ export class SocketServer {
       this.io.to(roomId).emit('lobby_update', {
         players: room.players.length,
         playerNames: room.players.map(id => room.playerNames.get(id) || 'Unknown'),
-        spectators: room.spectators.length,
-        spectatorNames: room.spectators.map(sid => room.spectatorNames.get(sid) || 'Unknown')
+        boardUsers: room.boardUsers.length,
+        boardUserNames: room.boardUsers.map(sid => room.boardUserNames.get(sid) || 'Unknown')
       });
     }
   }

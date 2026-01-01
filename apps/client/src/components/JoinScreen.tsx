@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 interface JoinScreenProps {
-  onJoin: (roomId: string, isHost: boolean, name?: string) => void;
+  onJoin: (roomId: string, isBoard: boolean, name?: string) => void;
 }
 
 // 太陽系の星の名前リスト
@@ -34,15 +34,15 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
   const [roomId, setRoomId] = useState("default");
   const [name, setName] = useState(defaultName);
 
-  const handleJoin = (isHost: boolean) => {
-    if (!isHost && !name.trim()) {
+  const handleJoin = (isBoard: boolean) => {
+    if (!isBoard && !name.trim()) {
       alert(t("Please enter your name"));
       return;
     }
     if (name.trim()) {
       localStorage.setItem("splendor_player_name", name.trim());
     }
-    onJoin(roomId || "default", isHost, name.trim());
+    onJoin(roomId || "default", isBoard, name.trim());
   };
 
   return (
@@ -112,7 +112,7 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
           {t("Best Experience")}
         </p>
         <p className="text-sm text-gray-500">
-          {t("Host on PC · Play on Mobile")}
+          {t("Board on PC · Play on Mobile")}
         </p>
       </div>
     </div>
