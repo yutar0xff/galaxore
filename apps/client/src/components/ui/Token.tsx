@@ -1,14 +1,8 @@
 import React from 'react';
 import { TokenColor, GemColor } from '@local-splendor/shared';
 import clsx from 'clsx';
-
-// Import gem images
-import rubyImg from '../../assets/gems/ruby.png';
-import emeraldImg from '../../assets/gems/emerald.png';
-import sapphireImg from '../../assets/gems/sapphire.png';
-import diamondImg from '../../assets/gems/diamond.png';
-import onyxImg from '../../assets/gems/onyx.png';
-import goldImg from '../../assets/gems/gold.png';
+import { ComponentSize } from '../../types/ui';
+import { GEM_IMAGES } from '../../constants/gems';
 
 const COLORS: Record<TokenColor, string> = {
   emerald: 'bg-green-500',
@@ -19,17 +13,8 @@ const COLORS: Record<TokenColor, string> = {
   gold: 'bg-yellow-400',
 };
 
-// Map colors to their images
-export const GEM_IMAGES: Record<TokenColor, string> = {
-  ruby: rubyImg,
-  emerald: emeraldImg,
-  sapphire: sapphireImg,
-  diamond: diamondImg,
-  onyx: onyxImg,
-  gold: goldImg,
-};
-
-type TokenSize = 'sm' | 'md' | 'lg' | 'xl';
+// Re-export GEM_IMAGES for backward compatibility
+export { GEM_IMAGES };
 
 const TOKEN_SIZES = {
   sm: { container: 'w-8 h-8', text: 'text-xs', badge: 'text-sm px-1.5' },
@@ -40,7 +25,7 @@ const TOKEN_SIZES = {
 
 // Cropped gem image component - removes ~25% padding from each side
 export function GemImage({ color, className }: { color: GemColor | TokenColor; className?: string }) {
-  const gemImage = GEM_IMAGES[color as TokenColor];
+  const gemImage = GEM_IMAGES[color];
   if (!gemImage) return null;
 
   return (
@@ -52,7 +37,7 @@ export function GemImage({ color, className }: { color: GemColor | TokenColor; c
   );
 }
 
-export function Token({ color, count, size = 'md', onClick }: { color: TokenColor; count?: number; size?: TokenSize; onClick?: () => void }) {
+export function Token({ color, count, size = 'md', onClick }: { color: TokenColor; count?: number; size?: ComponentSize; onClick?: () => void }) {
   const s = TOKEN_SIZES[size];
   const gemImage = GEM_IMAGES[color];
 
