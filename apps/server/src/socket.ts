@@ -5,6 +5,7 @@ import { SplendorGame } from './domain/game';
 
 interface Room {
   players: string[]; // userIds
+  playerNames: Map<string, string>; // userId -> name
   playerSockets: Map<string, string>; // userId -> socketId
   spectators: string[]; // socketIds
   game?: SplendorGame;
@@ -29,10 +30,10 @@ export class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log(`User connected: ${socket.id}`);
 
-      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator, userId }: { roomId: string, asSpectator?: boolean, userId?: string }) => {
+      socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator, userId, name }: { roomId: string, asSpectator?: boolean, userId?: string, name?: string }) => {
         let room = this.rooms.get(roomId);
         if (!room) {
-          room = { players: [], playerSockets: new Map(), spectators: [] };
+          room = { players: [], playerNames: new Map(), playerSockets: new Map(), spectators: [] };
           this.rooms.set(roomId, room);
         }
 
@@ -41,12 +42,16 @@ export class SocketServer {
         } else {
           // If no userId provided, fallback to socket.id (should not happen with updated client)
           const uid = userId || socket.id;
+          if (name) room.playerNames.set(uid, name);
 
           // Check if player is already in the room (reconnection)
           if (room.players.includes(uid)) {
               console.log(`User ${uid} reconnected with socket ${socket.id}`);
               room.playerSockets.set(uid, socket.id);
               socket.join(roomId);
+
+              // Update name if changed
+              if (name) room.playerNames.set(uid, name);
 
               // If game is running, send current state immediately
               if (room.game) {
@@ -61,7 +66,7 @@ export class SocketServer {
             socket.emit(EVENTS.ERROR, { message: "Game already started" });
             return;
           }
-          if (room.players.length >= 4) {
+          if (room.players.length >= 6) {
             socket.emit(EVENTS.ERROR, { message: "Room is full" });
             return;
           }
@@ -71,7 +76,7 @@ export class SocketServer {
         }
 
         socket.join(roomId);
-        console.log(`User ${userId || socket.id} joined room ${roomId} (spectator: ${!!asSpectator})`);
+        console.log(`User ${userId || socket.id} (${name || 'unknown'}) joined room ${roomId} (spectator: ${!!asSpectator})`);
 
         // Notify everyone in room about new player count or game state
         this.broadcastState(roomId);
@@ -85,7 +90,14 @@ export class SocketServer {
           return;
         }
 
-        room.game = new SplendorGame(room.players);
+        // Shuffle player order
+        const shuffledIds = [...room.players].sort(() => Math.random() - 0.5);
+        const playerConfigs = shuffledIds.map(id => ({
+            id,
+            name: room.playerNames.get(id) || `Player`
+        }));
+
+        room.game = new SplendorGame(playerConfigs);
         this.broadcastState(roomId);
       });
 
@@ -195,13 +207,9 @@ export class SocketServer {
     if (room.game) {
       this.io.to(roomId).emit(EVENTS.UPDATE_GAME_STATE, room.game.getState());
     } else {
-      // Send lobby info (hacky: using update_game_state with null or special payload)
-      // Or just send "WAITING_FOR_PLAYERS" event?
-      // Re-using UPDATE_GAME_STATE but with a partial object indicating lobby?
-      // Better: Create a separate event for Lobby Update or just generic State.
-      // For now, I'll emit a custom event or null game state.
       this.io.to(roomId).emit('lobby_update', {
         players: room.players.length,
+        playerNames: room.players.map(id => room.playerNames.get(id) || 'Unknown'),
         spectators: room.spectators.length
       });
     }
