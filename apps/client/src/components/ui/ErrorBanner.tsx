@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { ERROR_DISPLAY_DURATION } from '../../constants/game';
+import React, { useEffect } from "react";
+import { ERROR_DISPLAY_DURATION } from "../../constants/game";
 
 interface ErrorBannerProps {
   error: string | null;
@@ -19,7 +19,7 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
   if (!error) return null;
 
   return (
-    <div className="bg-red-500 p-2 text-center text-white animate-bounce">
+    <div className="animate-bounce bg-red-500 p-2 text-center text-white">
       {error}
     </div>
   );

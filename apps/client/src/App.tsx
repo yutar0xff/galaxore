@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import { JoinScreen } from './components/JoinScreen';
-import { HostBoard } from './components/HostBoard';
-import { PlayerController } from './components/PlayerController';
+import React, { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { JoinScreen } from "./components/JoinScreen";
+import { HostBoard } from "./components/HostBoard";
+import { PlayerController } from "./components/PlayerController";
 
 function App() {
   const navigate = useNavigate();
@@ -11,12 +11,14 @@ function App() {
     if (isHost) {
       navigate(`/host?roomId=${roomId}`);
     } else {
-      navigate(`/game?roomId=${roomId}${name ? `&name=${encodeURIComponent(name)}` : ''}`);
+      navigate(
+        `/game?roomId=${roomId}${name ? `&name=${encodeURIComponent(name)}` : ""}`,
+      );
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white font-sans">
+    <div className="min-h-screen bg-gray-900 font-sans text-white">
       <Routes>
         <Route path="/" element={<JoinScreen onJoin={handleJoin} />} />
         <Route path="/host" element={<HostBoard />} />

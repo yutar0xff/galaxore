@@ -1,4 +1,4 @@
-import { TokenColor } from '@local-splendor/shared';
+import { TokenColor } from "@local-splendor/shared";
 
 export type CardLevel = 1 | 2 | 3;
 
