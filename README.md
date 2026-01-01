@@ -17,7 +17,7 @@ pnpm dev
 ```
 
 - クライアント: http://localhost:5173
-- サーバー: http://localhost:3000
+- サーバー: http://localhost:3001
 
 ## スマホからの接続設定 (WSL2環境)
 
@@ -53,12 +53,12 @@ Windows側に来た通信をWSL2へ転送する設定を行います。
 $wsl_ip = (wsl hostname -I).Trim()
 $host_ip = "0.0.0.0"
 
-# ポート転送ルールの追加 (3000:サーバー, 5173:クライアント)
-netsh interface portproxy add v4tov4 listenport=3000 listenaddress=$host_ip connectport=3000 connectaddress=$wsl_ip
+# ポート転送ルールの追加 (3001:サーバー, 5173:クライアント)
+netsh interface portproxy add v4tov4 listenport=3001 listenaddress=$host_ip connectport=3001 connectaddress=$wsl_ip
 netsh interface portproxy add v4tov4 listenport=5173 listenaddress=$host_ip connectport=5173 connectaddress=$wsl_ip
 
 # ファイアウォールの許可（初回のみ必要）
-New-NetFirewallRule -DisplayName "Splendor Server" -Direction Inbound -LocalPort 3000,5173 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Splendor Server" -Direction Inbound -LocalPort 3001,5173 -Protocol TCP -Action Allow
 ```
 
 ### 接続確認
