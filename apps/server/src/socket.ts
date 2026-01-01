@@ -8,6 +8,7 @@ interface Room {
   playerNames: Map<string, string>; // userId -> name
   playerSockets: Map<string, string>; // userId -> socketId
   spectators: string[]; // socketIds
+  spectatorNames: Map<string, string>; // socketId -> name
   game?: SplendorGame;
 }
 
@@ -33,12 +34,13 @@ export class SocketServer {
       socket.on(EVENTS.JOIN_ROOM, ({ roomId, asSpectator, userId, name }: { roomId: string, asSpectator?: boolean, userId?: string, name?: string }) => {
         let room = this.rooms.get(roomId);
         if (!room) {
-          room = { players: [], playerNames: new Map(), playerSockets: new Map(), spectators: [] };
+          room = { players: [], playerNames: new Map(), playerSockets: new Map(), spectators: [], spectatorNames: new Map() };
           this.rooms.set(roomId, room);
         }
 
         if (asSpectator) {
           room.spectators.push(socket.id);
+          if (name) room.spectatorNames.set(socket.id, name);
         } else {
           // If no userId provided, fallback to socket.id (should not happen with updated client)
           const uid = userId || socket.id;
@@ -174,7 +176,12 @@ export class SocketServer {
         // Cleanup logic (remove from room, etc.) - Simplified for now
         this.rooms.forEach((room, roomId) => {
            // If spectator, remove
-           room.spectators = room.spectators.filter(p => p !== socket.id);
+           const wasSpectator = room.spectators.includes(socket.id);
+           if (wasSpectator) {
+             room.spectators = room.spectators.filter(p => p !== socket.id);
+             room.spectatorNames.delete(socket.id);
+             this.broadcastState(roomId);
+           }
 
            // If player, remove from socket map but keep in players list if game is active
            let userIdToRemove: string | undefined;
@@ -210,7 +217,8 @@ export class SocketServer {
       this.io.to(roomId).emit('lobby_update', {
         players: room.players.length,
         playerNames: room.players.map(id => room.playerNames.get(id) || 'Unknown'),
-        spectators: room.spectators.length
+        spectators: room.spectators.length,
+        spectatorNames: room.spectators.map(sid => room.spectatorNames.get(sid) || 'Unknown')
       });
     }
   }

@@ -135,23 +135,52 @@ export function HostBoard() {
         <p className="text-gray-400">{t("Scan to Join")}</p>
         <p className="text-sm text-gray-500">{joinUrl}</p>
 
-        <div className="mt-4 text-2xl">
-          {t("Players")}: {lobbyInfo?.players || 0} / {MAX_PLAYERS}
-        </div>
-        {lobbyInfo?.playerNames && lobbyInfo.playerNames.length > 0 && (
-          <div className="flex max-w-md flex-wrap justify-center gap-2">
-            {lobbyInfo.playerNames.map((name, i) => (
-              <span
-                key={i}
-                className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 font-bold text-amber-400"
-              >
-                {name}
-              </span>
-            ))}
+        <div className="w-full max-w-md space-y-6">
+          {/* プレイヤー一覧 */}
+          <div className="space-y-3">
+            <div className="text-2xl font-bold">
+              {t("Players")}: {lobbyInfo?.players || 0} / {MAX_PLAYERS}
+            </div>
+            {lobbyInfo?.playerNames && lobbyInfo.playerNames.length > 0 ? (
+              <div className="flex flex-wrap justify-center gap-2">
+                {lobbyInfo.playerNames.map((name, i) => (
+                  <span
+                    key={i}
+                    className="rounded-full border border-blue-500/50 bg-blue-600/20 px-4 py-2 font-bold text-blue-300"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500">
+                {t("No players yet")}
+              </div>
+            )}
           </div>
-        )}
-        <div className="text-xl text-gray-400">
-          {t("Spectators")}: {lobbyInfo?.spectators || 0}
+
+          {/* ボードユーザー一覧 */}
+          <div className="space-y-3">
+            <div className="text-2xl font-bold">
+              {t("Board Users")}: {lobbyInfo?.spectators || 0}
+            </div>
+            {lobbyInfo?.spectatorNames && lobbyInfo.spectatorNames.length > 0 ? (
+              <div className="flex flex-wrap justify-center gap-2">
+                {lobbyInfo.spectatorNames.map((name, i) => (
+                  <span
+                    key={i}
+                    className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500">
+                {t("No board users yet")}
+              </div>
+            )}
+          </div>
         </div>
 
         {(lobbyInfo?.players || 0) >= MIN_PLAYERS_TO_START && (
