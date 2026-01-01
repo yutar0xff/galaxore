@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { Card, CardBack } from './ui/Card';
@@ -9,6 +9,7 @@ import { GemColor, TokenColor, Card as CardType } from '@local-splendor/shared';
 import { QRCodeSVG } from 'qrcode.react';
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
+import useSound from 'use-sound';
 import { GEM_ORDER } from '../constants/gems';
 import { ControlsSection } from './host/ControlsSection';
 import { NoblesSection } from './host/NoblesSection';
@@ -22,6 +23,8 @@ import { useDialog } from '../hooks/useDialog';
 import { GameResultModal } from './ui/GameResultModal';
 import { LoadingSpinner } from './ui/LoadingSpinner';
 import { SERVER_PORT, MIN_PLAYERS_TO_START, MAX_PLAYERS, MIN_WINNING_SCORE, MAX_WINNING_SCORE } from '../constants/game';
+import { CHANGE_SOUND } from '../constants/sounds';
+import { setupAudioContextOnInteraction } from '../utils/audio';
 
 export function HostBoard() {
   const { t, i18n } = useTranslation();
@@ -30,8 +33,15 @@ export function HostBoard() {
   const roomId = searchParams.get('roomId');
   const { gameState, lobbyInfo, startGame, resetGame, sendAction } = useGame(roomId, { asSpectator: true });
   const [serverIp, setServerIp] = useState<string | null>(null);
+  const [playChangeSound] = useSound(CHANGE_SOUND, { volume: 0.5 });
+  const prevCurrentPlayerIndexRef = useRef<number | null>(null);
 
   useBeforeUnload();
+
+  // iOS対応: 音声コンテキストを有効化
+  useEffect(() => {
+    setupAudioContextOnInteraction();
+  }, []);
 
   useEffect(() => {
     // Fetch server IP address
@@ -64,6 +74,17 @@ export function HostBoard() {
           setShowResults(true);
       }
   }, [gameState?.gameEnded]);
+
+  // Play sound when player changes
+  useEffect(() => {
+    if (gameState) {
+      const currentIndex = gameState.currentPlayerIndex;
+      if (prevCurrentPlayerIndexRef.current !== null && prevCurrentPlayerIndexRef.current !== currentIndex) {
+        playChangeSound();
+      }
+      prevCurrentPlayerIndexRef.current = currentIndex;
+    }
+  }, [gameState?.currentPlayerIndex, gameState, playChangeSound]);
 
   if (!roomId) return <div>{t('Invalid Room ID')}</div>;
 
