@@ -43,7 +43,7 @@ export function PlayerController() {
     navigate("/");
   };
 
-  const { gameState, playerId, sendAction, error, setError } = useGame(roomId, {
+  const { gameState, playerId, lobbyInfo, sendAction, error, setError } = useGame(roomId, {
     onGameReset: handleGameReset,
   });
 
@@ -106,7 +106,14 @@ export function PlayerController() {
 
   if (!gameState || !playerId) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-900 p-4 text-white">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-900 p-4 text-white">
+        <button
+          onClick={() => navigate("/")}
+          className="absolute top-4 left-4 flex items-center gap-2 text-gray-400 hover:text-white"
+        >
+          ← {t("Back to Home")}
+        </button>
+
         <h2 className="text-2xl font-bold">{t("Connecting to Room...")}</h2>
         <div className="text-gray-400">
           {t("Room ID")}: {roomId}
@@ -114,9 +121,61 @@ export function PlayerController() {
         <LoadingSpinner />
 
         {playerId && !gameState && (
-          <div className="mt-4 text-center">
-            <p className="mb-2 text-green-400">{t("Connected!")}</p>
-            <p>{t("Waiting for host to start the game...")}</p>
+          <div className="w-full max-w-md space-y-6">
+            <div className="text-center">
+              <p className="mb-2 text-green-400 text-xl font-bold">{t("Connected!")}</p>
+              <p className="text-gray-400">{t("Waiting for host to start the game...")}</p>
+            </div>
+
+            {/* プレイヤー一覧 */}
+            {lobbyInfo && (
+              <>
+                <div className="space-y-3">
+                  <div className="text-xl font-bold">
+                    {t("Players")}: {lobbyInfo.players || 0}
+                  </div>
+                  {lobbyInfo.playerNames && lobbyInfo.playerNames.length > 0 ? (
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {lobbyInfo.playerNames.map((name, i) => (
+                        <span
+                          key={i}
+                          className="rounded-full border border-blue-500/50 bg-blue-600/20 px-4 py-2 font-bold text-blue-300"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      {t("No players yet")}
+                    </div>
+                  )}
+                </div>
+
+                {/* ボードユーザー一覧 */}
+                <div className="space-y-3">
+                  <div className="text-xl font-bold">
+                    {t("Board Users")}: {lobbyInfo.spectators || 0}
+                  </div>
+                  {lobbyInfo.spectatorNames && lobbyInfo.spectatorNames.length > 0 ? (
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {lobbyInfo.spectatorNames.map((name, i) => (
+                        <span
+                          key={i}
+                          className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      {t("No board users yet")}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

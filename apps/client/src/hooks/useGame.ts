@@ -27,6 +27,7 @@ export const useGame = (
     players: number;
     playerNames?: string[];
     spectators: number;
+    spectatorNames?: string[];
   } | null>(null);
   const [wasReset, setWasReset] = useState(false);
   const socketRef = useRef<Socket | null>(null);
@@ -78,6 +79,7 @@ export const useGame = (
           players: number;
           playerNames?: string[];
           spectators: number;
+          spectatorNames?: string[];
         }) => {
           if (isMounted) setLobbyInfo(info);
         };
