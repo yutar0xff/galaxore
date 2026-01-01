@@ -214,7 +214,7 @@ export function BoardView() {
 
   // 3-Column Layout: Last/Noble | Resources/Cards | Controls/Players
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black p-3 font-serif text-white">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black p-3 font-serif text-white">
       {/* Result Modal */}
       {gameState.gameEnded && (
         <GameResultModal
