@@ -1,12 +1,12 @@
-import React from 'react';
-import { Player, GameState, Card as CardType } from '@local-splendor/shared';
-import { useTranslation } from 'react-i18next';
-import { ResourcesHeader } from './ResourcesHeader';
-import { PaymentModal } from './PaymentModal';
-import { TokenPayment } from '../../types/game';
-import { CARD_LEVELS } from '../../constants/game';
-import { CardItem } from '../ui/CardItem';
-import { canAffordCard, getMissingGems } from '../../utils/game';
+import React from "react";
+import { Player, GameState, Card as CardType } from "@local-splendor/shared";
+import { useTranslation } from "react-i18next";
+import { ResourcesHeader } from "./ResourcesHeader";
+import { PaymentModal } from "./PaymentModal";
+import { TokenPayment } from "../../types/game";
+import { CARD_LEVELS } from "../../constants/game";
+import { CardItem } from "../ui/CardItem";
+import { canAffordCard, getMissingGems } from "../../utils/game";
 
 interface BuyCardViewProps {
   player: Player;
@@ -39,10 +39,12 @@ export function BuyCardView({
 
       {/* Reserved Cards Section */}
       {player.reserved.length > 0 && (
-        <div className="border-b border-gray-700 pb-6 mb-2">
-          <h3 className="mb-3 font-bold text-yellow-500 pl-2 border-l-4 border-yellow-500">{t('Reserved Cards')}</h3>
-          <div className="flex overflow-x-auto gap-4 pb-2 snap-x px-2 pt-14">
-            {player.reserved.map(card => {
+        <div className="mb-2 border-b border-gray-700 pb-6">
+          <h3 className="mb-3 border-l-4 border-yellow-500 pl-2 font-bold text-yellow-500">
+            {t("Reserved Cards")}
+          </h3>
+          <div className="flex snap-x gap-4 overflow-x-auto px-2 pt-14 pb-2">
+            {player.reserved.map((card) => {
               const affordable = canAffordCard(card, player);
               const missingGems = getMissingGems(card, player);
               return (
@@ -61,11 +63,13 @@ export function BuyCardView({
         </div>
       )}
 
-      {CARD_LEVELS.map(level => (
+      {CARD_LEVELS.map((level) => (
         <div key={level}>
-          <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
-          <div className="flex overflow-x-auto gap-4 pb-4 snap-x pt-14">
-            {gameState.board.cards[level].map(card => {
+          <h3 className="mb-2 font-bold text-gray-400">
+            {t("Level")} {level}
+          </h3>
+          <div className="flex snap-x gap-4 overflow-x-auto pt-14 pb-4">
+            {gameState.board.cards[level].map((card) => {
               const affordable = canAffordCard(card, player);
               const missingGems = getMissingGems(card, player);
               return (

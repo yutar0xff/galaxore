@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Card as CardType, Player, GemColor, TokenColor } from '@local-splendor/shared';
-import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
-import { Check, X, Minus, Plus } from 'lucide-react';
-import { GEM_BORDER_COLORS_WITH_GOLD, GEM_ORDER } from '../../constants/gems';
-import { GEM_IMAGES } from '../ui/Token';
-import { calculateDiscount } from '../../utils/game';
-import { TokenPayment } from '../../types/game';
+import React, { useState, useEffect } from "react";
+import {
+  Card as CardType,
+  Player,
+  GemColor,
+  TokenColor,
+} from "@local-splendor/shared";
+import { useTranslation } from "react-i18next";
+import clsx from "clsx";
+import { Check, X, Minus, Plus } from "lucide-react";
+import { GEM_BORDER_COLORS_WITH_GOLD, GEM_ORDER } from "../../constants/gems";
+import { GEM_IMAGES } from "../ui/Token";
+import { calculateDiscount } from "../../utils/game";
+import { TokenPayment } from "../../types/game";
 
 interface PaymentModalProps {
   card: CardType;
@@ -16,7 +21,13 @@ interface PaymentModalProps {
   isMyTurn: boolean;
 }
 
-export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: PaymentModalProps) {
+export function PaymentModal({
+  card,
+  player,
+  onClose,
+  onSubmit,
+  isMyTurn,
+}: PaymentModalProps) {
   const { t } = useTranslation();
   const [tokenPayment, setTokenPayment] = useState<TokenPayment>({});
 
@@ -46,17 +57,19 @@ export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: Paym
   // Gold is used to cover any deficit (required - paid)
   let goldUsed = 0;
   const allGemColors: GemColor[] = GEM_ORDER;
-  const rows = allGemColors.map(color => {
-    const cost = card.cost[color] || 0;
-    if (cost === 0 && (discount[color] || 0) === 0) return null; // Only show relevant gems
-    const bonus = discount[color] || 0;
-    const req = Math.max(0, cost - bonus);
-    const pay = tokenPayment[color] ?? 0;
-    const deficit = Math.max(0, req - pay);
-    goldUsed += deficit;
+  const rows = allGemColors
+    .map((color) => {
+      const cost = card.cost[color] || 0;
+      if (cost === 0 && (discount[color] || 0) === 0) return null; // Only show relevant gems
+      const bonus = discount[color] || 0;
+      const req = Math.max(0, cost - bonus);
+      const pay = tokenPayment[color] ?? 0;
+      const deficit = Math.max(0, req - pay);
+      goldUsed += deficit;
 
-    return { color, cost, bonus, req, pay };
-  }).filter(row => row !== null);
+      return { color, cost, bonus, req, pay };
+    })
+    .filter((row) => row !== null);
 
   const canAfford = (player.tokens.gold || 0) >= goldUsed;
 
@@ -64,7 +77,7 @@ export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: Paym
   // Validates that the new value is within allowed limits
   const handleAdjust = (color: TokenColor, delta: number) => {
     const current = tokenPayment[color] || 0;
-    const row = rows.find(r => r.color === color);
+    const row = rows.find((r) => r.color === color);
     if (!row) return;
 
     const newValue = current + delta;
@@ -84,22 +97,37 @@ export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: Paym
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-in fade-in duration-200">
-      <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl border border-gray-600">
-        <h2 className="text-xl font-bold mb-4 flex justify-between items-center text-white">
-          {t('Select Payment')}
-          <button onClick={onClose} className="p-1 hover:bg-gray-700 rounded"><X size={20} /></button>
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 duration-200">
+      <div className="w-full max-w-md rounded-xl border border-gray-600 bg-gray-800 p-6 shadow-2xl">
+        <h2 className="mb-4 flex items-center justify-between text-xl font-bold text-white">
+          {t("Select Payment")}
+          <button onClick={onClose} className="rounded p-1 hover:bg-gray-700">
+            <X size={20} />
+          </button>
         </h2>
 
-        <div className="space-y-4 mb-6">
-          {rows.map(row => (
-            <div key={row.color} className="flex items-center justify-between bg-gray-900/50 p-3 rounded-lg border border-gray-700">
+        <div className="mb-6 space-y-4">
+          {rows.map((row) => (
+            <div
+              key={row.color}
+              className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-900/50 p-3"
+            >
               <div className="flex items-center gap-3">
-                <div className={clsx("w-10 h-10 rounded-full border-2 overflow-hidden shadow-sm", GEM_BORDER_COLORS_WITH_GOLD[row.color])}>
-                  <img src={GEM_IMAGES[row.color]} className="w-full h-full object-cover scale-150" />
+                <div
+                  className={clsx(
+                    "h-10 w-10 overflow-hidden rounded-full border-2 shadow-sm",
+                    GEM_BORDER_COLORS_WITH_GOLD[row.color],
+                  )}
+                >
+                  <img
+                    src={GEM_IMAGES[row.color]}
+                    className="h-full w-full scale-150 object-cover"
+                  />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider">{row.color}</span>
+                  <span className="text-xs tracking-wider text-gray-400 uppercase">
+                    {row.color}
+                  </span>
                   <div className="flex gap-2 text-xs">
                     <span className="text-red-400">Cost: {row.cost}</span>
                     <span className="text-green-400">Bonus: {row.bonus}</span>
@@ -107,19 +135,26 @@ export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: Paym
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 bg-gray-800 rounded-lg p-1">
+              <div className="flex items-center gap-3 rounded-lg bg-gray-800 p-1">
                 <button
                   onClick={() => handleAdjust(row.color, -1)}
-                  disabled={row.pay <= 0 || (goldUsed + 1 > (player.tokens.gold || 0))}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-30 transition-colors text-white"
+                  disabled={
+                    row.pay <= 0 || goldUsed + 1 > (player.tokens.gold || 0)
+                  }
+                  className="rounded bg-gray-700 p-1.5 text-white transition-colors hover:bg-gray-600 disabled:opacity-30"
                 >
                   <Minus size={16} />
                 </button>
-                <span className="w-8 text-center font-bold text-lg text-white">{row.pay}</span>
+                <span className="w-8 text-center text-lg font-bold text-white">
+                  {row.pay}
+                </span>
                 <button
                   onClick={() => handleAdjust(row.color, 1)}
-                  disabled={row.pay >= row.req || row.pay >= (player.tokens[row.color] || 0)}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600 disabled:opacity-30 transition-colors text-white"
+                  disabled={
+                    row.pay >= row.req ||
+                    row.pay >= (player.tokens[row.color] || 0)
+                  }
+                  className="rounded bg-gray-700 p-1.5 text-white transition-colors hover:bg-gray-600 disabled:opacity-30"
                 >
                   <Plus size={16} />
                 </button>
@@ -128,31 +163,49 @@ export function PaymentModal({ card, player, onClose, onSubmit, isMyTurn }: Paym
           ))}
 
           {/* Gold Row (Calculated) */}
-          <div className="flex items-center justify-between bg-yellow-900/20 p-3 rounded-lg border border-yellow-700/50">
+          <div className="flex items-center justify-between rounded-lg border border-yellow-700/50 bg-yellow-900/20 p-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-yellow-600 overflow-hidden shadow-sm">
-                <img src={GEM_IMAGES['gold']} className="w-full h-full object-cover scale-150" />
+              <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-yellow-600 shadow-sm">
+                <img
+                  src={GEM_IMAGES["gold"]}
+                  className="h-full w-full scale-150 object-cover"
+                />
               </div>
               <span className="font-bold text-yellow-500">Gold Needed</span>
             </div>
-            <span className={clsx("font-bold text-xl", goldUsed > (player.tokens.gold || 0) ? "text-red-500" : "text-yellow-500")}>
-              {goldUsed} <span className="text-sm text-gray-400">/ {player.tokens.gold || 0}</span>
+            <span
+              className={clsx(
+                "text-xl font-bold",
+                goldUsed > (player.tokens.gold || 0)
+                  ? "text-red-500"
+                  : "text-yellow-500",
+              )}
+            >
+              {goldUsed}{" "}
+              <span className="text-sm text-gray-400">
+                / {player.tokens.gold || 0}
+              </span>
             </span>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-lg font-bold bg-gray-700 hover:bg-gray-600 text-white transition-colors">{t('Cancel')}</button>
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-lg bg-gray-700 py-3 font-bold text-white transition-colors hover:bg-gray-600"
+          >
+            {t("Cancel")}
+          </button>
           <button
             onClick={() => {
               const finalPayment = { ...tokenPayment, gold: goldUsed };
               onSubmit(card, finalPayment);
             }}
             disabled={!canAfford || !isMyTurn}
-            className="flex-1 py-3 rounded-lg font-bold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors flex justify-center items-center gap-2"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Check size={18} />
-            {isMyTurn ? t('Confirm') : t('Not your turn')}
+            {isMyTurn ? t("Confirm") : t("Not your turn")}
           </button>
         </div>
       </div>

@@ -11,7 +11,8 @@ export function enableAudioContext() {
   try {
     // 空の音声を作成して再生することで、音声コンテキストを有効化
     const audio = new Audio();
-    audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+    audio.src =
+      "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
     audio.volume = 0.01;
 
     const playPromise = audio.play();
@@ -24,11 +25,11 @@ export function enableAudioContext() {
         })
         .catch((error) => {
           // エラーは無視（既に有効化されている可能性がある）
-          console.debug('Audio context enable attempt:', error);
+          console.debug("Audio context enable attempt:", error);
         });
     }
   } catch (error) {
-    console.debug('Audio context enable error:', error);
+    console.debug("Audio context enable error:", error);
   }
 }
 
@@ -42,13 +43,19 @@ export function setupAudioContextOnInteraction() {
   const enableOnInteraction = () => {
     enableAudioContext();
     // 一度有効化したら、イベントリスナーを削除
-    document.removeEventListener('touchstart', enableOnInteraction);
-    document.removeEventListener('click', enableOnInteraction);
-    document.removeEventListener('touchend', enableOnInteraction);
+    document.removeEventListener("touchstart", enableOnInteraction);
+    document.removeEventListener("click", enableOnInteraction);
+    document.removeEventListener("touchend", enableOnInteraction);
   };
 
   // iOSでは touchstart が重要
-  document.addEventListener('touchstart', enableOnInteraction, { once: true, passive: true });
-  document.addEventListener('touchend', enableOnInteraction, { once: true, passive: true });
-  document.addEventListener('click', enableOnInteraction, { once: true });
+  document.addEventListener("touchstart", enableOnInteraction, {
+    once: true,
+    passive: true,
+  });
+  document.addEventListener("touchend", enableOnInteraction, {
+    once: true,
+    passive: true,
+  });
+  document.addEventListener("click", enableOnInteraction, { once: true });
 }

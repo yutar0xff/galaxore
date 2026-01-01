@@ -1,4 +1,4 @@
-import { CardLevel } from '../types/game';
+import { CardLevel } from "../types/game";
 
 export const MAX_TOKENS = 10;
 export const ERROR_DISPLAY_DURATION = 3000;
