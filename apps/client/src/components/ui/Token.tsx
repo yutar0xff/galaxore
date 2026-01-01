@@ -32,10 +32,10 @@ export const GEM_IMAGES: Record<TokenColor, string> = {
 type TokenSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const TOKEN_SIZES = {
-  sm: { container: 'w-8 h-8', text: 'text-xs', badge: 'text-xs px-1' },
-  md: { container: 'w-12 h-12', text: 'text-sm', badge: 'text-sm px-1.5' },
-  lg: { container: 'w-16 h-16', text: 'text-lg', badge: 'text-base px-2' },
-  xl: { container: 'w-20 h-20', text: 'text-xl', badge: 'text-lg px-2.5 py-0.5' },
+  sm: { container: 'w-8 h-8', text: 'text-xs', badge: 'text-sm px-1.5' },
+  md: { container: 'w-12 h-12', text: 'text-sm', badge: 'text-base px-2' },
+  lg: { container: 'w-16 h-16', text: 'text-lg', badge: 'text-xl px-2.5 py-0.5' },
+  xl: { container: 'w-24 h-24', text: 'text-2xl', badge: 'text-2xl px-3 py-1' },
 };
 
 // Cropped gem image component - removes ~25% padding from each side

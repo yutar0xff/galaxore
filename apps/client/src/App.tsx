@@ -7,11 +7,11 @@ import { PlayerController } from './components/PlayerController';
 function App() {
   const navigate = useNavigate();
 
-  const handleJoin = (roomId: string, isHost: boolean) => {
+  const handleJoin = (roomId: string, isHost: boolean, name?: string) => {
     if (isHost) {
       navigate(`/host?roomId=${roomId}`);
     } else {
-      navigate(`/game?roomId=${roomId}`);
+      navigate(`/game?roomId=${roomId}${name ? `&name=${encodeURIComponent(name)}` : ''}`);
     }
   };
 
