@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { getSocket } from "../infrastructure/socket";
 import { GameState, EVENTS, Action } from "@local-splendor/shared";
 import { Socket } from "socket.io-client";
+import { ERROR_DISPLAY_DURATION } from "../constants/game";
 
 const getUserId = () => {
   let id = localStorage.getItem("splendor_user_id");
