@@ -17,10 +17,17 @@ export class SocketServer {
   private rooms: Map<string, Room> = new Map();
 
   constructor(httpServer: HttpServer) {
+    // CORS設定: 環境変数で許可するオリジンを指定可能
+    // 未設定の場合は全許可（ローカル開発用）
+    const allowedOrigins = process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+      : '*';
+
     this.io = new Server(httpServer, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
       }
     });
 
