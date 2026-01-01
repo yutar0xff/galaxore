@@ -276,6 +276,26 @@ export function PlayerController() {
       return (player.tokens.gold || 0) >= goldNeeded;
   };
 
+  const getMissingGems = (card: CardType): Record<GemColor, number> => {
+      const discount: Record<string, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+      player.cards.forEach(c => { discount[c.gem]++; });
+
+      const missing: Record<GemColor, number> = { emerald: 0, sapphire: 0, ruby: 0, diamond: 0, onyx: 0 };
+      const allGemColors: GemColor[] = ['ruby', 'emerald', 'sapphire', 'diamond', 'onyx'];
+
+      for (const color of allGemColors) {
+          const cost = card.cost[color] || 0;
+          const bonus = discount[color] || 0;
+          const req = Math.max(0, cost - bonus);
+          const available = player.tokens[color as TokenColor] || 0;
+          if (available < req) {
+              missing[color] = req - available;
+          }
+      }
+
+      return missing;
+  };
+
   const handleTokenClick = (color: TokenColor) => {
     if (color === 'gold') return;
     const gem = color as GemColor;
@@ -604,26 +624,47 @@ export function PlayerController() {
           {player.reserved.length > 0 && (
               <div className="border-b border-gray-700 pb-6 mb-2">
                   <h3 className="mb-3 font-bold text-yellow-500 pl-2 border-l-4 border-yellow-500">{t('Reserved Cards')}</h3>
-                  <div className="flex overflow-x-auto gap-4 pb-2 snap-x px-2">
+                  <div className="flex overflow-x-auto gap-4 pb-2 snap-x px-2 pt-14">
                      {player.reserved.map(card => {
                          const affordable = canAffordCard(card);
+                         const missingGems = getMissingGems(card);
+                         const hasMissingGems = Object.values(missingGems).some(v => v > 0);
                          return (
                              <div key={card.id} className="flex-shrink-0 snap-center relative">
+                                 {affordable ? (
+                                     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 text-green-500 text-xs font-bold whitespace-nowrap flex items-center">
+                                         {t('Available to Develop')}
+                                     </div>
+                                 ) : hasMissingGems ? (
+                                     <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 whitespace-nowrap">
+                                         <div className="flex items-center gap-1.5">
+                                             {(['ruby', 'emerald', 'sapphire', 'diamond', 'onyx'] as GemColor[]).map(color => {
+                                                 const missing = missingGems[color];
+                                                 if (missing <= 0) return null;
+                                                 return (
+                                                     <div key={color} className="relative">
+                                                         <div className={clsx("w-6 h-6 rounded-sm border overflow-hidden", GEM_BORDER_COLORS[color])}>
+                                                             <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                                                         </div>
+                                                         <span className="absolute -top-1.5 -right-1.5 text-red-500 text-xs font-black leading-none">{missing}</span>
+                                                     </div>
+                                                 );
+                                             })}
+                                         </div>
+                                     </div>
+                                 ) : null}
                                  <Card card={card} onClick={() => {
                                  if (!isMyTurn) {
                                      showAlert(t('Not your turn'));
                                      return;
                                  }
-                                     if (affordable) {
-                                         setPaymentCard(card);
-                                         setPaymentModalOpen(true);
-                                     } else {
+                                 if (affordable) {
+                                     setPaymentCard(card);
+                                     setPaymentModalOpen(true);
+                                 } else {
                                      showAlert(t('Not enough resources'));
-                                     }
+                                 }
                                  }} />
-                                 {affordable && (
-                                     <div className="absolute inset-0 rounded-lg ring-4 ring-green-500 pointer-events-none animate-pulse opacity-50 z-20"></div>
-                                 )}
                              </div>
                          );
                      })}
@@ -634,11 +675,35 @@ export function PlayerController() {
           {[1, 2, 3].map(level => (
             <div key={level}>
                 <h3 className="mb-2 font-bold text-gray-400">{t('Level')} {level}</h3>
-                <div className="flex overflow-x-auto gap-4 pb-4 snap-x">
+                <div className="flex overflow-x-auto gap-4 pb-4 snap-x pt-14">
                     {gameState.board.cards[level as 1|2|3].map(card => {
                         const affordable = canAffordCard(card);
+                        const missingGems = getMissingGems(card);
+                        const hasMissingGems = Object.values(missingGems).some(v => v > 0);
                         return (
                             <div key={card.id} className="flex-shrink-0 snap-center relative">
+                                {affordable ? (
+                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 text-green-500 text-xs font-bold whitespace-nowrap flex items-center">
+                                        {t('Available to Develop')}
+                                    </div>
+                                ) : hasMissingGems ? (
+                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 whitespace-nowrap">
+                                        <div className="flex items-center gap-1.5">
+                                            {(['ruby', 'emerald', 'sapphire', 'diamond', 'onyx'] as GemColor[]).map(color => {
+                                                const missing = missingGems[color];
+                                                if (missing <= 0) return null;
+                                                return (
+                                                    <div key={color} className="relative">
+                                                        <div className={clsx("w-6 h-6 rounded-sm border overflow-hidden", GEM_BORDER_COLORS[color])}>
+                                                            <img src={GEM_IMAGES[color]} alt={color} className="w-full h-full object-cover scale-150" />
+                                                        </div>
+                                                        <span className="absolute -top-1.5 -right-1.5 text-red-500 text-xs font-black leading-none">{missing}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ) : null}
                                 <Card card={card} onClick={() => {
                                     if (!isMyTurn) {
                                         showAlert(t('Not your turn'));
@@ -649,9 +714,6 @@ export function PlayerController() {
                                         setPaymentModalOpen(true);
                                     }
                                 }} />
-                                {affordable && (
-                                     <div className="absolute inset-0 rounded-lg ring-4 ring-green-500 pointer-events-none animate-pulse opacity-50 z-20"></div>
-                                )}
                             </div>
                         );
                     })}
