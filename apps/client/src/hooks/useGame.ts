@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { getSocket } from '../infrastructure/socket';
 import { GameState, EVENTS, Action } from '@local-splendor/shared';
 import { Socket } from 'socket.io-client';
@@ -17,10 +18,13 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean;
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [playerId, setPlayerId] = useState<string | null>(null);
-  const [lobbyInfo, setLobbyInfo] = useState<{ players: number, spectators: number } | null>(null);
+  const [lobbyInfo, setLobbyInfo] = useState<{ players: number, playerNames?: string[], spectators: number } | null>(null);
   const [wasReset, setWasReset] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const userIdRef = useRef<string>(getUserId());
+
+  const [searchParams] = useSearchParams();
+  const userName = searchParams.get('name') || localStorage.getItem('splendor_player_name');
 
   useEffect(() => {
     if (!roomId) return;
@@ -44,7 +48,8 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean;
             currentSocket?.emit(EVENTS.JOIN_ROOM, {
                 roomId,
                 asSpectator: options.asSpectator,
-                userId: userIdRef.current
+                userId: userIdRef.current,
+                name: userName
             });
           }
         };
@@ -59,7 +64,7 @@ export const useGame = (roomId: string | null, options: { asSpectator?: boolean;
           }
         };
 
-        const onLobbyUpdate = (info: { players: number, spectators: number }) => {
+        const onLobbyUpdate = (info: { players: number, playerNames?: string[], spectators: number }) => {
             if (isMounted) setLobbyInfo(info);
         };
 

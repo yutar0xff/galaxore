@@ -7,6 +7,7 @@ import {
   GemColor,
   INITIAL_TOKENS,
   NOBLES_COUNT,
+  BOARD_CARDS_COUNT,
   WINNING_SCORE,
   MAX_RESERVED_CARDS,
   GEM_COLORS,
@@ -17,18 +18,19 @@ export class SplendorGame {
   private state: GameState;
   private decks: { 1: Card[]; 2: Card[]; 3: Card[] };
 
-  constructor(playerIds: string[]) {
+  constructor(players: { id: string, name: string }[]) {
     this.decks = { 1: [], 2: [], 3: [] }; // Initialized in initializeGame
-    this.state = this.initializeGame(playerIds);
+    this.state = this.initializeGame(players);
   }
 
   public getState(): GameState {
     return this.state;
   }
 
-  private initializeGame(playerIds: string[]): GameState {
-    const playerCount = playerIds.length as 2 | 3 | 4;
+  private initializeGame(playerConfigs: { id: string, name: string }[]): GameState {
+    const playerCount = playerConfigs.length as 2 | 3 | 4 | 5 | 6;
     const initialTokens = INITIAL_TOKENS[playerCount];
+    const cardsOnBoard = BOARD_CARDS_COUNT[playerCount];
 
     // Shuffle and store in private decks
     this.decks = {
@@ -47,9 +49,9 @@ export class SplendorGame {
     }));
 
     return {
-      players: playerIds.map((id, index) => ({
-        id,
-        name: `Player ${index + 1}`,
+      players: playerConfigs.map((config, index) => ({
+        id: config.id,
+        name: config.name,
         tokens: {},
         cards: [],
         reserved: [],
@@ -58,9 +60,9 @@ export class SplendorGame {
       board: {
         nobles,
         cards: {
-          1: this.decks[1].splice(0, 4),
-          2: this.decks[2].splice(0, 4),
-          3: this.decks[3].splice(0, 4),
+          1: this.decks[1].splice(0, cardsOnBoard),
+          2: this.decks[2].splice(0, cardsOnBoard),
+          3: this.decks[3].splice(0, cardsOnBoard),
         },
         decks: {
           1: this.decks[1].length,
@@ -82,7 +84,7 @@ export class SplendorGame {
       gameEnded: false,
       phase: 'NORMAL',
       lastAction: null,
-      winningScore: WINNING_SCORE,
+      winningScore: playerCount >= 5 ? 20 : WINNING_SCORE,
     };
   }
 
