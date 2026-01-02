@@ -28,6 +28,7 @@ import {
   MAX_PLAYERS,
   MIN_WINNING_SCORE,
   MAX_WINNING_SCORE,
+  PRODUCTION_CLIENT_URL,
 } from "../constants/game";
 import { CHANGE_SOUND } from "../constants/sounds";
 import { setupAudioContextOnInteraction } from "../utils/audio";
@@ -73,11 +74,17 @@ export function BoardView() {
     fetchServerIp();
   }, []);
 
-  const joinHost = serverIp || window.location.hostname;
+  // 本番環境では固定URLを使用、ローカル環境では動的に生成
+  const isProduction = window.location.hostname === "splendor-web.pages.dev" || window.location.hostname.includes("pages.dev");
   const joinUrl = roomId
-    ? `${window.location.protocol}//${joinHost}:${window.location.port}`
-    : // ? `${window.location.protocol}//${joinHost}:${window.location.port}/game?roomId=${roomId}`
-      "";
+    ? isProduction
+      ? `${PRODUCTION_CLIENT_URL}/?roomId=${roomId}`
+      : (() => {
+          const joinHost = serverIp || window.location.hostname;
+          const port = window.location.port ? `:${window.location.port}` : "";
+          return `${window.location.protocol}//${joinHost}${port}/?roomId=${roomId}`;
+        })()
+    : "";
 
   const [showResults, setShowResults] = useState(false);
 
