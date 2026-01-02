@@ -1,5 +1,10 @@
 import React from "react";
-import { Player, GameState, TokenColor, OreColor } from "@galaxore/shared";
+import {
+  Player,
+  GameState,
+  TokenColor,
+  OreColor,
+} from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Card } from "../ui/Card";

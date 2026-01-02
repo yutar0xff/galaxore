@@ -45,8 +45,7 @@ export function TakeOresView({
                 count={gameState.board.tokens[color]}
                 onClick={() => onTokenClick(color)}
               />
-              {selectedTokens.filter((c: OreColor) => c === color).length >
-                0 && (
+              {selectedTokens.filter((c: OreColor) => c === color).length > 0 && (
                 <div className="absolute -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold">
                   {selectedTokens.filter((c: OreColor) => c === color).length}
                 </div>
