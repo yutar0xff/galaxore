@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { PRODUCTION_CLIENT_URL } from "../constants/game";
 
 interface JoinScreenProps {
   onJoin: (roomId: string, isBoard: boolean, name?: string) => void;
@@ -25,13 +26,30 @@ const getRandomPlanetName = () => {
   return PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)];
 };
 
+  // ローカル環境かどうかを判定
+const isLocalEnvironment = () => {
+  return (
+    !window.location.hostname.includes("pages.dev") &&
+    !window.location.hostname.includes("railway.app") &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname.includes("192.168.") ||
+      window.location.hostname.includes("10."))
+  );
+};
+
 export function JoinScreen({ onJoin }: JoinScreenProps) {
   const { t } = useTranslation();
   const defaultName = useMemo(
     () => localStorage.getItem("splendor_player_name") || getRandomPlanetName(),
     [],
   );
-  const [roomId, setRoomId] = useState("default");
+  // ローカル環境でのみデフォルト値を設定
+  const defaultRoomId = useMemo(
+    () => (isLocalEnvironment() ? "default" : ""),
+    [],
+  );
+  const [roomId, setRoomId] = useState(defaultRoomId);
   const [name, setName] = useState(defaultName);
 
   const handleJoin = (isBoard: boolean) => {
@@ -42,7 +60,14 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
     if (name.trim()) {
       localStorage.setItem("splendor_player_name", name.trim());
     }
-    onJoin(roomId || "default", isBoard, name.trim());
+    // ローカル環境でのみフォールバックを使用
+    const finalRoomId =
+      roomId.trim() || (isLocalEnvironment() ? "default" : "");
+    if (!finalRoomId) {
+      alert(t("Please enter a Room ID"));
+      return;
+    }
+    onJoin(finalRoomId, isBoard, name.trim());
   };
 
   return (
@@ -81,7 +106,7 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
             </label>
             <input
               type="text"
-              placeholder="default"
+              placeholder={isLocalEnvironment() ? "default" : ""}
               className="w-full rounded-2xl border border-gray-700 bg-gray-900 px-6 py-4 text-xl font-bold text-white transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500"
               value={roomId}
               onChange={(e) => setRoomId(e.target.value)}

@@ -7,6 +7,7 @@ const resources = {
     translation: {
       "Local Splendor": "Local Splendor",
       "Room ID": "Room ID (e.g. 1234)",
+      "Please enter a Room ID": "Please enter a Room ID",
       "Join as Player": "Join as Player",
       "Enter Room as Board": "Enter Room as Board",
       "Board on PC, Play on Mobile": "Board on PC, Play on Mobile",
@@ -90,6 +91,7 @@ const resources = {
     translation: {
       "Local Splendor": "Local Splendor",
       "Room ID": "Room ID (e.g. 1234)",
+      "Please enter a Room ID": "ルームIDを入力してください",
       "Join as Player": "プレイヤーとして参加",
       "Enter Room as Board": "ボードとして部屋を作成",
       "Board on PC, Play on Mobile": "PCでボード、スマホでプレイ",
