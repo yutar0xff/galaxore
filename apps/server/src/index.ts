@@ -1,9 +1,9 @@
-import express from 'express';
-import { createServer } from 'http';
-import cors from 'cors';
-import { SocketServer } from './socket';
-import os from 'os';
-import 'dotenv/config';
+import express from "express";
+import { createServer } from "http";
+import cors from "cors";
+import { SocketServer } from "./socket";
+import os from "os";
+import "dotenv/config";
 
 const app = express();
 
@@ -23,7 +23,7 @@ new SocketServer(httpServer);
 
 // ポート番号: Railwayは自動的にPORT環境変数を設定
 // 未設定の場合は3000を使用（ローカル環境用）
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
 function getIpAddress() {
   if (process.env.HOST_IP) {
@@ -35,22 +35,22 @@ function getIpAddress() {
     const iface = interfaces[devName];
     if (!iface) continue;
     for (const alias of iface) {
-      if (alias.family === 'IPv4' && !alias.internal) {
+      if (alias.family === "IPv4" && !alias.internal) {
         return alias.address;
       }
     }
   }
-  return 'localhost';
+  return "localhost";
 }
 
 const wslIp = getIpAddress();
 
 // API endpoint to get server IP
-app.get('/api/ip', (req, res) => {
+app.get("/api/ip", (req, res) => {
   res.json({
     ip: wslIp,
     serverPort: PORT,
-    clientPort: 5173
+    clientPort: 5173,
   });
 });
 

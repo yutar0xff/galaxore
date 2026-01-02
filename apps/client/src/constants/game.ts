@@ -8,7 +8,7 @@ export const MAX_PLAYERS = 6;
 export const MIN_WINNING_SCORE = 5;
 export const MAX_WINNING_SCORE = 30;
 export const CARD_LEVELS: CardLevel[] = [1, 2, 3];
-export const SERVER_PORT = 3000;
+export const SERVER_PORT = 3001;
 
 // 本番環境のURL
 export const PRODUCTION_CLIENT_URL = "https://splendor-web.pages.dev";

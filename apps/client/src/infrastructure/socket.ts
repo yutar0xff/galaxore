@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 
-const PORT = 3000;
+const PORT = 3001;
 
 export const getSocket = async (): Promise<Socket> => {
   // 環境変数からサーバーURLを取得（本番環境用）

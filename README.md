@@ -32,58 +32,52 @@ pnpm install
 pnpm dev
 ```
 
-- クライアント: http://localhost:5173
-- サーバー: http://localhost:3000
+- クライアント: `http://<WindowsのIPアドレス>:5173`
+- サーバー: `http://<WindowsのIPアドレス>:3001`
 
-## スマホからの接続設定 (WSL2環境)
+## 初回設定
 
-WSL2でホストする場合、PCを再起動するたびにWSL内部のIPアドレスが変わるため、接続できなくなることがあります。
-以下の手順で設定を行うことで、Windows側のIPアドレスを使って安定して接続できるようになります。
+ファイアウォールでポートを開放する必要があります。
 
-### 手順1: サーバーIPの固定設定
+### 手順1: WindowsのIPアドレスを確認
 
-`apps/server` ディレクトリに `.env` ファイルを作成し、WindowsホストのIPアドレスを指定します。
-
-1. **WindowsのIPアドレスを確認**
-   PowerShellで以下を実行し、`IPv4 アドレス` を確認します（例: `192.168.1.15`）。
-   ```powershell
-   ipconfig
-   ```
-
-2. **`.env` ファイルの作成**
-   `apps/server/.env` ファイルを作成し、確認したIPアドレスを記述します。
-
-   ```env
-   # apps/server/.env
-   HOST_IP=192.168.1.15
-   ```
-   ※ `192.168.1.15` の部分は実際のあなたのPCのIPアドレスに書き換えてください。
-
-### 手順2: ポートフォワーディング（バイパス）の設定
-
-Windows側に来た通信をWSL2へ転送する設定を行います。
-**PowerShellを管理者として実行**し、以下のコマンドを実行してください。
+PowerShellで以下を実行し、`IPv4 アドレス` を確認します（例: `192.168.1.15`）。
 
 ```powershell
-# 変数設定（WSLのIPアドレスを自動取得して設定する場合）
-$wsl_ip = (wsl hostname -I).Trim()
-$host_ip = "0.0.0.0"
-
-# ポート転送ルールの追加 (3000:サーバー, 5173:クライアント)
-netsh interface portproxy add v4tov4 listenport=3000 listenaddress=$host_ip connectport=3000 connectaddress=$wsl_ip
-netsh interface portproxy add v4tov4 listenport=5173 listenaddress=$host_ip connectport=5173 connectaddress=$wsl_ip
-
-# ファイアウォールの許可（初回のみ必要）
-New-NetFirewallRule -DisplayName "Splendor Server" -Direction Inbound -LocalPort 3000,5173 -Protocol TCP -Action Allow
+ipconfig
 ```
 
-### 接続確認
+Wi-Fi接続の場合は「Wireless LAN adapter Wi-Fi」、有線接続の場合は「Ethernet adapter」の項目から `IPv4 アドレス` を確認してください。
 
-設定後、スマホのブラウザから `http://<WindowsのIPアドレス>:5173`（例: `http://192.168.1.15:5173`）にアクセスしてください。
+### 手順2: サーバーIPの設定
 
-### PC再起動後の対応
+`apps/server` ディレクトリに `.env` ファイルを作成し、確認したIPアドレスを記述します。
 
-PCを再起動してWSLのIPが変わった場合は、**手順2のポートフォワーディング設定のみ** 再実行してください。
-`.env` の `HOST_IP` はWindows側のIPが変わらない限り変更不要です。
+```env
+# apps/server/.env
+HOST_IP=192.168.1.15
+```
 
-もしWindows側のIPも変わった場合（ルーターのDHCP割り当て変更など）は、`.env` の修正とポートフォワーディング設定の両方が必要です。
+※ `192.168.1.15` の部分は、手順1で確認した実際のIPアドレスに書き換えてください。
+
+### 手順3: ファイアウォールの許可設定
+
+**PowerShellを管理者として実行**し、以下のコマンドを実行してファイアウォールでポートを開放します。
+
+```powershell
+New-NetFirewallRule -DisplayName "Splendor Local Game" -Direction Inbound -LocalPort 3001,5173 -Protocol TCP -Action Allow
+```
+
+### 手順4: ゲーム起動とQRコード読み取り
+
+1. `pnpm dev` でサーバーとクライアントを起動します
+2. ブラウザで `http://<WindowsのIPアドレス>:5173` にアクセスします
+3. ゲームルームを作成すると、画面にQRコードが表示されます
+4. スマートフォンのカメラアプリでQRコードを読み取ります
+5. 読み取ったURLにアクセスしてゲームに参加できます
+
+### 注意事項
+
+- PCのIPアドレスが変わった場合（ルーターのDHCP割り当て変更など）は、`.env` ファイルの `HOST_IP` を更新してください
+- 同じWi-Fiネットワークに接続されている必要があります
+- ネットワークプロファイルが「パブリック」になっている場合は、「プライベート」に変更することを推奨します
