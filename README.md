@@ -2,6 +2,22 @@
 
 ローカルネットワークで遊べるSplendorクローンゲームです。
 
+## 著作権について
+
+**重要**: このプロジェクトは非公式のファンメイドプロジェクトです。
+
+- "Splendor" は Space Cowboys / Asmodee Group の商標です
+- このプロジェクトは Space Cowboys または Asmodee Group とは提携・承認されていません
+- 元のゲームデザインは Marc André によるものです
+- 元のゲーム: [Splendor | Space Cowboys](https://www.spacecowboys.fr/splendor-en)
+
+このプロジェクトは教育目的および個人利用のために作成されました。商業利用は意図していません。
+
+## オンラインでプレイ
+
+- **本番環境**: https://splendor-web.pages.dev/
+- **サーバー**: https://splendor-web-server.up.railway.app/
+
 ## 起動方法
 
 ### 1. 依存関係のインストール
