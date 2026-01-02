@@ -1,28 +1,28 @@
 import React from "react";
-import { Player, GameState, GemColor } from "@local-splendor/shared";
+import { Player, GameState, OreColor } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import { Check } from "lucide-react";
 import { Token } from "../ui/Token";
 import { ResourcesHeader } from "./ResourcesHeader";
-import { GEM_ORDER } from "../../constants/gems";
+import { ORE_ORDER } from "../../constants/ores";
 
-interface TakeGemsViewProps {
+interface TakeOresViewProps {
   player: Player;
   gameState: GameState;
-  selectedTokens: GemColor[];
-  onTokenClick: (color: GemColor) => void;
+  selectedTokens: OreColor[];
+  onTokenClick: (color: OreColor) => void;
   onSubmit: () => void;
   isMyTurn: boolean;
 }
 
-export function TakeGemsView({
+export function TakeOresView({
   player,
   gameState,
   selectedTokens,
   onTokenClick,
   onSubmit,
   isMyTurn,
-}: TakeGemsViewProps) {
+}: TakeOresViewProps) {
   const { t } = useTranslation();
 
   return (
@@ -35,7 +35,7 @@ export function TakeGemsView({
           {t("Select Tokens to Take")}
         </h3>
         <div className="mb-6 flex flex-wrap justify-center gap-4">
-          {GEM_ORDER.map((color) => (
+          {ORE_ORDER.map((color) => (
             <div
               key={color}
               className={`relative transition-all duration-200 ${selectedTokens.includes(color) ? "scale-110 rounded-full ring-4 ring-white" : ""}`}
@@ -45,9 +45,10 @@ export function TakeGemsView({
                 count={gameState.board.tokens[color]}
                 onClick={() => onTokenClick(color)}
               />
-              {selectedTokens.filter((c) => c === color).length > 0 && (
+              {selectedTokens.filter((c: OreColor) => c === color).length >
+                0 && (
                 <div className="absolute -top-2 -right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold">
-                  {selectedTokens.filter((c) => c === color).length}
+                  {selectedTokens.filter((c: OreColor) => c === color).length}
                 </div>
               )}
             </div>

@@ -1,8 +1,8 @@
 import React from "react";
-import { Player, GemColor } from "@local-splendor/shared";
+import { Player, OreColor } from "@galaxore/shared";
 import clsx from "clsx";
-import { GEM_BORDER_COLORS_WITH_GOLD, GEM_ORDER } from "../../constants/gems";
-import { GEM_IMAGES } from "../ui/Token";
+import { ORE_BORDER_COLORS_WITH_GOLD, ORE_ORDER } from "../../constants/ores";
+import { ORE_IMAGES } from "../ui/Token";
 import { usePlayerStats } from "../../hooks/usePlayerStats";
 
 interface ResourcesHeaderProps {
@@ -11,12 +11,12 @@ interface ResourcesHeaderProps {
 
 export function ResourcesHeader({ player }: ResourcesHeaderProps) {
   const { tokenCounts, bonusCounts } = usePlayerStats(player);
-  const allGemColors: GemColor[] = GEM_ORDER;
+  const allOreColors: OreColor[] = ORE_ORDER;
 
   return (
     <div className="mb-4 overflow-x-auto rounded-xl border border-gray-700 bg-gray-800 p-3">
       <div className="mx-auto flex min-w-min justify-center gap-4">
-        {allGemColors.map((color) => {
+        {allOreColors.map((color) => {
           const bonus = bonusCounts[color] || 0;
           const token = tokenCounts[color] || 0;
 
@@ -27,12 +27,12 @@ export function ResourcesHeader({ player }: ResourcesHeaderProps) {
                 <div
                   className={clsx(
                     "h-10 w-10 overflow-hidden rounded-sm border-2",
-                    GEM_BORDER_COLORS_WITH_GOLD[color],
+                    ORE_BORDER_COLORS_WITH_GOLD[color],
                     bonus === 0 && "opacity-30 grayscale",
                   )}
                 >
                   <img
-                    src={GEM_IMAGES[color]}
+                    src={ORE_IMAGES[color]}
                     alt={color}
                     className="h-full w-full scale-150 object-cover"
                   />
@@ -47,12 +47,12 @@ export function ResourcesHeader({ player }: ResourcesHeaderProps) {
                 <div
                   className={clsx(
                     "h-10 w-10 overflow-hidden rounded-full border-2",
-                    GEM_BORDER_COLORS_WITH_GOLD[color],
+                    ORE_BORDER_COLORS_WITH_GOLD[color],
                     token === 0 && "opacity-30 grayscale",
                   )}
                 >
                   <img
-                    src={GEM_IMAGES[color]}
+                    src={ORE_IMAGES[color]}
                     alt={color}
                     className="h-full w-full scale-150 object-cover"
                   />
@@ -77,7 +77,7 @@ export function ResourcesHeader({ player }: ResourcesHeaderProps) {
               )}
             >
               <img
-                src={GEM_IMAGES["gold"]}
+                src={ORE_IMAGES["gold"]}
                 alt="gold"
                 className="h-full w-full scale-150 object-cover"
               />

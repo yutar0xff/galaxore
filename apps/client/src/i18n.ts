@@ -5,7 +5,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 const resources = {
   en: {
     translation: {
-      "Local Splendor": "Local Splendor",
+      Galaxore: "Galaxore",
       "Room ID": "Room ID (e.g. 1234)",
       "Please enter a Room ID": "Please enter a Room ID",
       "Join as Player": "Join as Player",
@@ -27,7 +27,7 @@ const resources = {
       "YOUR TURN": "YOUR TURN",
       "Waiting for": "Waiting for {{name}}",
       "Take Tokens": "Mining",
-      "Confirm Take Gems": "Confirm Mining",
+      "Confirm Take Ores": "Confirm Mining",
       Level: "Level",
       "My Tokens": "My Tokens",
       "Reserved Cards": "Reserved Cards",
@@ -68,7 +68,7 @@ const resources = {
       "Owned Tokens": "Owned Tokens",
       Score: "Score",
       Take: "Mine",
-      "No Gems": "No Gems",
+      "No Ores": "No Ores",
       "Player not found": "Player not found",
       "Your Tokens": "Your Tokens",
       "Select Tokens to Take": "Select Tokens to Mine",
@@ -89,7 +89,7 @@ const resources = {
   },
   ja: {
     translation: {
-      "Local Splendor": "Local Splendor",
+      Galaxore: "Galaxore",
       "Room ID": "Room ID (e.g. 1234)",
       "Please enter a Room ID": "ルームIDを入力してください",
       "Join as Player": "プレイヤーとして参加",
@@ -111,7 +111,7 @@ const resources = {
       "YOUR TURN": "YOUR TURN",
       "Waiting for": "Waiting for {{name}}",
       "Take Tokens": "採掘",
-      "Confirm Take Gems": "採掘を確定",
+      "Confirm Take Ores": "採掘を確定",
       Level: "Level",
       "My Tokens": "手持ちトークン",
       "Reserved Cards": "予約済みカード",
@@ -150,9 +150,10 @@ const resources = {
       Hand: "Hand",
       Resources: "Resources",
       "Owned Tokens": "所持するトークン",
+      "Owned Ores": "所持する鉱石",
       Score: "Score",
       Take: "採掘",
-      "No Gems": "No Gems",
+      "No Ores": "No Ores",
       "Player not found": "Player not found",
       "Your Tokens": "所持トークン",
       "Select Tokens to Take": "採掘するトークンを選択",

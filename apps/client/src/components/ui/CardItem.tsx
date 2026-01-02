@@ -1,13 +1,13 @@
 import React from "react";
-import { Card as CardType, GemColor } from "@local-splendor/shared";
+import { Card as CardType, OreColor } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import { Card } from "./Card";
-import { MissingGemsIndicator } from "./MissingGemsIndicator";
+import { MissingOresIndicator } from "./MissingOresIndicator";
 
 interface CardItemProps {
   card: CardType;
   affordable: boolean;
-  missingGems: Record<GemColor, number>;
+  missingOres: Record<OreColor, number>;
   onClick: () => void;
   isMyTurn: boolean;
   onAlert: (message: string) => void;
@@ -16,7 +16,7 @@ interface CardItemProps {
 export function CardItem({
   card,
   affordable,
-  missingGems,
+  missingOres,
   onClick,
   isMyTurn,
   onAlert,
@@ -30,7 +30,7 @@ export function CardItem({
           {t("Available")}
         </div>
       ) : (
-        <MissingGemsIndicator missingGems={missingGems} />
+        <MissingOresIndicator missingOres={missingOres} />
       )}
       <Card
         card={card}

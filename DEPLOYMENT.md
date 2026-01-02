@@ -1,6 +1,6 @@
 # デプロイ手順書
 
-このドキュメントでは、Local SplendorをCloudflare Pages（クライアント）とRailway（サーバー）にデプロイする手順を説明します。
+このドキュメントでは、GalaxoreをCloudflare Pages（クライアント）とRailway（サーバー）にデプロイする手順を説明します。
 
 ## 前提条件
 
@@ -35,7 +35,7 @@ Railwayが自動的にプロジェクトを検出しますが、以下の設定�
 Railwayは `railway.json` を自動的に読み込みます。手動で設定する場合：
 
 ```
-cd ../.. && pnpm install && pnpm --filter @local-splendor/shared run build && cd apps/server && pnpm build
+cd ../.. && pnpm install && pnpm --filter @galaxore/shared run build && cd apps/server && pnpm build
 ```
 
 #### 起動コマンド
@@ -51,7 +51,7 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 |--------|-----|------|
 | `NODE_ENV` | `production` | 本番環境フラグ |
 | `PORT` | （自動設定） | Railwayが自動的に設定（読み取り専用） |
-| `CORS_ORIGIN` | `https://splendor-web.pages.dev` | Cloudflare PagesのURL（カンマ区切りで複数指定可能） |
+| `CORS_ORIGIN` | `https://galaxore.pages.dev` | Cloudflare PagesのURL（カンマ区切りで複数指定可能） |
 
 **注意**: `CORS_ORIGIN`には、デプロイ後のCloudflare PagesのURLを設定してください。
 
@@ -63,7 +63,7 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 
 1. Railwayダッシュボードで「Deployments」を確認
 2. デプロイが成功したら、「Settings」→「Domains」で公開URLを確認
-3. サーバーURL: https://splendor-web-server.up.railway.app/
+3. サーバーURL: https://galaxore-server.up.railway.app/
 
 ## 2. Cloudflare Pages（クライアント）のデプロイ
 
@@ -80,7 +80,7 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 
 | 項目 | 値 |
 |------|-----|
-| **Project name** | `local-splendor-client`（任意） |
+| **Project name** | `galaxore-client`（任意） |
 | **Production branch** | `main` または `master` |
 | **Build command** | `pnpm run build`（ルートディレクトリから実行） |
 | **Build output directory** | `apps/client/dist` |
@@ -94,7 +94,7 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 
 | 変数名 | 値 | 説明 |
 |--------|-----|------|
-| `VITE_SERVER_URL` | `https://splendor-web-server.up.railway.app` | RailwayのサーバーURL |
+| `VITE_SERVER_URL` | `https://galaxore-server.up.railway.app` | RailwayのサーバーURL |
 
 **本番環境のURL**:
 - クライアント: https://splendor-web.pages.dev/
@@ -103,7 +103,7 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 ### 2.4 デプロイの確認
 
 1. 「Deployments」タブでデプロイ状況を確認
-2. デプロイが成功したら、公開URLを確認: https://splendor-web.pages.dev/
+2. デプロイが成功したら、公開URLを確認: https://galaxore.pages.dev/
 3. このURLをRailwayの `CORS_ORIGIN` 環境変数に設定
 
 ## 3. 環境変数の相互設定
@@ -113,13 +113,13 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 Railwayの環境変数 `CORS_ORIGIN` を設定：
 
 ```
-https://splendor-web.pages.dev
+https://galaxore.pages.dev
 ```
 
 複数のドメインを許可する場合（例: プレビュー環境も含める）:
 
 ```
-https://splendor-web.pages.dev,https://preview-splendor-web.pages.dev
+https://galaxore.pages.dev,https://preview-galaxore.pages.dev
 ```
 
 ### 3.2 動作確認
@@ -176,7 +176,7 @@ pnpm dev
 
 **確認事項**:
 1. モノレポの依存関係が正しくインストールされているか
-2. 共有パッケージ（`@local-splendor/shared`）が先にビルドされているか
+2. 共有パッケージ（`@galaxore/shared`）が先にビルドされているか
 3. ビルドコマンドが正しく設定されているか
 4. 最新のコードがGitHubにプッシュされているか
 5. Cloudflare Pagesのビルドキャッシュをクリアする（Settings → Builds & deployments → Clear build cache）
@@ -223,12 +223,12 @@ pnpm dev
 モノレポのため、以下の順序でビルドする必要があります：
 
 1. ルートで `pnpm install` を実行
-2. `@local-splendor/shared` パッケージをビルド
+2. `@galaxore/shared` パッケージをビルド
 3. 各アプリ（client/server）をビルド
 
 ### 依存関係
 
-- 各アプリは `@local-splendor/shared` に依存しています
+- 各アプリは `@galaxore/shared` に依存しています
 - ビルド前に共有パッケージをビルドする必要があります
 
 ## 8. コスト

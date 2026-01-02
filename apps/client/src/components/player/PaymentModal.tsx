@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   Card as CardType,
   Player,
-  GemColor,
+  OreColor,
   TokenColor,
-} from "@local-splendor/shared";
+} from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Check, X, Minus, Plus } from "lucide-react";
-import { GEM_BORDER_COLORS_WITH_GOLD, GEM_ORDER } from "../../constants/gems";
-import { GEM_IMAGES } from "../ui/Token";
+import { ORE_BORDER_COLORS_WITH_GOLD, ORE_ORDER } from "../../constants/ores";
+import { ORE_IMAGES } from "../ui/Token";
 import { calculateDiscount } from "../../utils/game";
 import { TokenPayment } from "../../types/game";
 
@@ -38,7 +38,7 @@ export function PaymentModal({
   // Calculate initial payment: use tokens as much as possible, leaving deficit for gold
   useEffect(() => {
     const initialPayment: TokenPayment = {};
-    for (const color of GEM_ORDER) {
+    for (const color of ORE_ORDER) {
       const cost = card.cost[color] || 0;
       if (cost === 0) continue;
       const bonus = discount[color] || 0;
@@ -53,14 +53,14 @@ export function PaymentModal({
   }, [card, discount, player.tokens]);
 
   // Recalculate payment rows and gold needed based on current tokenPayment
-  // For each gem color: calculate cost, discount, required amount, and how much player is paying
+  // For each ore color: calculate cost, discount, required amount, and how much player is paying
   // Gold is used to cover any deficit (required - paid)
   let goldUsed = 0;
-  const allGemColors: GemColor[] = GEM_ORDER;
-  const rows = allGemColors
+  const allOreColors: OreColor[] = ORE_ORDER;
+  const rows = allOreColors
     .map((color) => {
       const cost = card.cost[color] || 0;
-      if (cost === 0 && (discount[color] || 0) === 0) return null; // Only show relevant gems
+      if (cost === 0 && (discount[color] || 0) === 0) return null; // Only show relevant ores
       const bonus = discount[color] || 0;
       const req = Math.max(0, cost - bonus);
       const pay = tokenPayment[color] ?? 0;
@@ -73,7 +73,7 @@ export function PaymentModal({
 
   const canAfford = (player.tokens.gold || 0) >= goldUsed;
 
-  // Handle adjusting payment amount for a specific gem color
+  // Handle adjusting payment amount for a specific ore color
   // Validates that the new value is within allowed limits
   const handleAdjust = (color: TokenColor, delta: number) => {
     const current = tokenPayment[color] || 0;
@@ -116,11 +116,11 @@ export function PaymentModal({
                 <div
                   className={clsx(
                     "h-10 w-10 overflow-hidden rounded-full border-2 shadow-sm",
-                    GEM_BORDER_COLORS_WITH_GOLD[row.color],
+                    ORE_BORDER_COLORS_WITH_GOLD[row.color],
                   )}
                 >
                   <img
-                    src={GEM_IMAGES[row.color]}
+                    src={ORE_IMAGES[row.color]}
                     className="h-full w-full scale-150 object-cover"
                   />
                 </div>
@@ -167,7 +167,7 @@ export function PaymentModal({
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-yellow-600 shadow-sm">
                 <img
-                  src={GEM_IMAGES["gold"]}
+                  src={ORE_IMAGES["gold"]}
                   className="h-full w-full scale-150 object-cover"
                 />
               </div>

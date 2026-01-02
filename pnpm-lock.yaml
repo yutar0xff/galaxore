@@ -14,7 +14,7 @@ importers:
 
   apps/client:
     dependencies:
-      '@local-splendor/shared':
+      '@galaxore/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       clsx:
@@ -84,7 +84,7 @@ importers:
 
   apps/server:
     dependencies:
-      '@local-splendor/shared':
+      '@galaxore/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       cors:

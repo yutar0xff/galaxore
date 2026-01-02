@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Player, TokenColor } from "@local-splendor/shared";
+import { Player, TokenColor } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Minus, Plus } from "lucide-react";
 import {
-  GEM_BORDER_COLORS_WITH_GOLD,
+  ORE_BORDER_COLORS_WITH_GOLD,
   ALL_TOKEN_COLORS,
-} from "../../constants/gems";
-import { GEM_IMAGES } from "../ui/Token";
+} from "../../constants/ores";
+import { ORE_IMAGES } from "../ui/Token";
 import { calculateTokenCounts } from "../../utils/game";
 import { MAX_TOKENS } from "../../constants/game";
 import { TokenPayment } from "../../types/game";
@@ -82,11 +82,11 @@ export function DiscardTokensView({
                 <div
                   className={clsx(
                     "h-8 w-8 overflow-hidden rounded-full border-2",
-                    GEM_BORDER_COLORS_WITH_GOLD[color],
+                    ORE_BORDER_COLORS_WITH_GOLD[color],
                   )}
                 >
                   <img
-                    src={GEM_IMAGES[color]}
+                    src={ORE_IMAGES[color]}
                     className="h-full w-full scale-150 object-cover"
                   />
                 </div>

@@ -36,7 +36,9 @@ export function ControlsSection({
             size={20}
             className="transition-transform group-hover:scale-110"
           />
-          <span className="hidden text-sm font-bold sm:inline">{t("Home")}</span>
+          <span className="hidden text-sm font-bold sm:inline">
+            {t("Home")}
+          </span>
         </button>
 
         {/* Settings Button */}

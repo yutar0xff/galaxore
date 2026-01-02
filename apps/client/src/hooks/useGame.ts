@@ -1,17 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getSocket } from "../infrastructure/socket";
-import { GameState, EVENTS, Action } from "@local-splendor/shared";
+import { GameState, EVENTS, Action } from "@galaxore/shared";
 import { Socket } from "socket.io-client";
 import { ERROR_DISPLAY_DURATION } from "../constants/game";
 
 const getUserId = () => {
-  let id = localStorage.getItem("splendor_user_id");
+  let id = localStorage.getItem("galaxore_user_id");
   if (!id) {
     id =
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15);
-    localStorage.setItem("splendor_user_id", id);
+    localStorage.setItem("galaxore_user_id", id);
   }
   return id;
 };
@@ -36,7 +36,7 @@ export const useGame = (
 
   const [searchParams] = useSearchParams();
   const userName =
-    searchParams.get("name") || localStorage.getItem("splendor_player_name");
+    searchParams.get("name") || localStorage.getItem("galaxore_player_name");
 
   useEffect(() => {
     if (!roomId) return;
