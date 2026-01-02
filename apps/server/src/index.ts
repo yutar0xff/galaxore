@@ -7,8 +7,8 @@ import "dotenv/config";
 
 const app = express();
 
-// CORS設宁E 環墁E��数で許可するオリジンを指定可能
-// 未設定�E場合�E全許可�E�ローカル開発用�E�E
+// CORS設定: 環境変数で許可するオリジンを指定可能
+// 未設定の場合は全許可（ローカル開発用）
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
   : '*';
@@ -21,8 +21,8 @@ app.use(cors({
 const httpServer = createServer(app);
 new SocketServer(httpServer);
 
-// ポ�Eト番号: Railwayは自動的にPORT環墁E��数を設宁E
-// 未設定�E場合�E3000を使用�E�ローカル環墁E���E�E
+// ポート番号: Railwayは自動的にPORT環境変数を設定
+// 未設定の場合は3000を使用（ローカル環境用）
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
 
 function getIpAddress() {
@@ -54,8 +54,8 @@ app.get("/api/ip", (req, res) => {
   });
 });
 
-// 本番環墁E��はRailwayが�E動的にホストを設定するため、E
-// ローカル環墁E�EみIPアドレスを表示
+// 本番環境ではRailwayが自動的にホストを設定するため、
+// ローカル環境のみIPアドレスを表示
 httpServer.listen(PORT, '0.0.0.0', () => {
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Server running on http://localhost:${PORT}`);

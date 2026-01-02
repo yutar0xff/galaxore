@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useGame } from "../hooks/useGame";
 import { Modal } from "./ui/Modal";
-import { TokenColor, OreColor, Card as CardType } from "@galaxore/shared";
+import { TokenColor, GemColor, Card as CardType } from "@local-splendor/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Gem, ShoppingCart, ArrowLeft, Wallet } from "lucide-react";
 import useSound from "use-sound";
 import { Dashboard } from "./player/Dashboard";
-import { TakeOresView } from "./player/TakeOresView";
+import { TakeGemsView } from "./player/TakeGemsView";
 import { BuyCardView } from "./player/BuyCardView";
 import { ReserveView } from "./player/ReserveView";
 import { DiscardTokensView } from "./player/DiscardTokensView";
@@ -25,7 +25,7 @@ import { setupAudioContextOnInteraction } from "../utils/audio";
 
 type ActionView =
   | "DASHBOARD"
-  | "TAKE_ORES"
+  | "TAKE_GEMS"
   | "BUY_CARD"
   | "RESERVE"
   | "DISCARD_TOKENS";
@@ -49,7 +49,7 @@ export function PlayerController() {
     });
 
   const [currentView, setCurrentView] = useState<ActionView>("DASHBOARD");
-  const [selectedTokens, setSelectedTokens] = useState<OreColor[]>([]);
+  const [selectedTokens, setSelectedTokens] = useState<GemColor[]>([]);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentCard, setPaymentCard] = useState<CardType | null>(null);
 
@@ -196,7 +196,7 @@ export function PlayerController() {
   // Handle token selection logic:
   // - Can select up to 3 different colors, OR 2 of the same color
   // - Clicking a selected token removes it (unless it's the only one, then duplicates it)
-  const handleTokenClick = (color: OreColor) => {
+  const handleTokenClick = (color: GemColor) => {
     if (selectedTokens.includes(color)) {
       if (selectedTokens.length === 1 && selectedTokens[0] === color) {
         setSelectedTokens([color, color]); // 2 same
@@ -227,7 +227,7 @@ export function PlayerController() {
           "Taking these tokens will exceed the token limit. You will need to discard some. Proceed?",
         ),
         () => {
-          sendAction({ type: "TAKE_ORES", payload: { ores: selectedTokens } });
+          sendAction({ type: "TAKE_GEMS", payload: { gems: selectedTokens } });
           setSelectedTokens([]);
           setCurrentView("DASHBOARD");
         },
@@ -235,7 +235,7 @@ export function PlayerController() {
       return;
     }
 
-    sendAction({ type: "TAKE_ORES", payload: { ores: selectedTokens } });
+    sendAction({ type: "TAKE_GEMS", payload: { gems: selectedTokens } });
     setSelectedTokens([]);
     setCurrentView("DASHBOARD");
   };
@@ -320,7 +320,7 @@ export function PlayerController() {
             <ArrowLeft size={32} />
           </button>
           <div className="flex-1 text-center text-2xl font-bold tracking-tight">
-            {currentView === "TAKE_ORES" && t("Take Tokens")}
+            {currentView === "TAKE_GEMS" && t("Take Tokens")}
             {currentView === "BUY_CARD" && t("Buy Card")}
             {currentView === "RESERVE" && t("Reserve")}
             {currentView === "DISCARD_TOKENS" && t("Discard Tokens")}
@@ -335,8 +335,8 @@ export function PlayerController() {
         {currentView === "DASHBOARD" && (
           <Dashboard player={player} gameState={gameState} i18n={i18n} />
         )}
-        {currentView === "TAKE_ORES" && (
-          <TakeOresView
+        {currentView === "TAKE_GEMS" && (
+          <TakeGemsView
             player={player}
             gameState={gameState}
             selectedTokens={selectedTokens}
@@ -387,7 +387,7 @@ export function PlayerController() {
           {/* Action Buttons - 4 in a row */}
           <div className="flex gap-3 border-t border-gray-800 bg-gray-900 p-3">
             <button
-              onClick={() => setCurrentView("TAKE_ORES")}
+              onClick={() => setCurrentView("TAKE_GEMS")}
               className="flex flex-1 flex-col items-center gap-2 rounded-2xl border-2 border-gray-700 bg-gray-800 p-4 shadow-lg transition hover:bg-gray-700 active:scale-95"
             >
               <Gem size={32} />

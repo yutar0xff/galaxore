@@ -1,5 +1,5 @@
 import React from "react";
-import { GameState, Player } from "@galaxore/shared";
+import { GameState, Player } from "@local-splendor/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Modal } from "./Modal";

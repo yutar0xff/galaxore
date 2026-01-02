@@ -11,7 +11,7 @@ export const EVENTS = {
   GAME_RESET: 'game_reset', // Notification to clients that game was reset
 };
 
-export const ORE_COLORS: TokenColor[] = ['ruby', 'emerald', 'sapphire', 'diamond', 'onyx', 'gold'];
+export const GEM_COLORS: TokenColor[] = ['ruby', 'emerald', 'sapphire', 'diamond', 'onyx', 'gold'];
 
 export const INITIAL_TOKENS = {
   2: { regular: 4, gold: 5 },

@@ -1,16 +1,16 @@
 import {
   Card as CardType,
   Player,
-  OreColor,
+  GemColor,
   TokenColor,
-} from "@galaxore/shared";
-import { ORE_ORDER } from "../constants/ores";
+} from "@local-splendor/shared";
+import { GEM_ORDER } from "../constants/gems";
 
 /**
  * Calculate discount (bonuses) from player's cards
  */
-export function calculateDiscount(player: Player): Record<OreColor, number> {
-  const discount: Record<OreColor, number> = {
+export function calculateDiscount(player: Player): Record<GemColor, number> {
+  const discount: Record<GemColor, number> = {
     emerald: 0,
     sapphire: 0,
     ruby: 0,
@@ -18,7 +18,7 @@ export function calculateDiscount(player: Player): Record<OreColor, number> {
     onyx: 0,
   };
   player.cards.forEach((c) => {
-    discount[c.ore]++;
+    discount[c.gem]++;
   });
   return discount;
 }
@@ -53,7 +53,7 @@ export function canAffordCard(card: CardType, player: Player): boolean {
   const discount = calculateDiscount(player);
 
   let goldNeeded = 0;
-  for (const color of ORE_ORDER) {
+  for (const color of GEM_ORDER) {
     const cost = card.cost[color] || 0;
     const bonus = discount[color] || 0;
     const req = Math.max(0, cost - bonus);
@@ -66,15 +66,15 @@ export function canAffordCard(card: CardType, player: Player): boolean {
 }
 
 /**
- * Calculate missing ores for a card
+ * Calculate missing gems for a card
  */
-export function getMissingOres(
+export function getMissingGems(
   card: CardType,
   player: Player,
-): Record<OreColor, number> {
+): Record<GemColor, number> {
   const discount = calculateDiscount(player);
 
-  const missing: Record<OreColor, number> = {
+  const missing: Record<GemColor, number> = {
     emerald: 0,
     sapphire: 0,
     ruby: 0,
@@ -82,7 +82,7 @@ export function getMissingOres(
     onyx: 0,
   };
 
-  for (const color of ORE_ORDER) {
+  for (const color of GEM_ORDER) {
     const cost = card.cost[color] || 0;
     const bonus = discount[color] || 0;
     const req = Math.max(0, cost - bonus);
@@ -98,8 +98,8 @@ export function getMissingOres(
 /**
  * Calculate bonuses from player's cards
  */
-export function calculateBonuses(player: Player): Record<OreColor, number> {
-  const bonusCounts: Record<OreColor, number> = {
+export function calculateBonuses(player: Player): Record<GemColor, number> {
+  const bonusCounts: Record<GemColor, number> = {
     emerald: 0,
     sapphire: 0,
     ruby: 0,
@@ -107,7 +107,7 @@ export function calculateBonuses(player: Player): Record<OreColor, number> {
     onyx: 0,
   };
   player.cards.forEach((card) => {
-    bonusCounts[card.ore]++;
+    bonusCounts[card.gem]++;
   });
   return bonusCounts;
 }

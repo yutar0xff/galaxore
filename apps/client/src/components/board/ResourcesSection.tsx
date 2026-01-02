@@ -1,7 +1,7 @@
 import React from "react";
-import { TokenColor } from "@galaxore/shared";
+import { TokenColor } from "@local-splendor/shared";
 import { Token } from "../ui/Token";
-import { ALL_TOKEN_COLORS } from "../../constants/ores";
+import { ALL_TOKEN_COLORS } from "../../constants/gems";
 
 interface ResourcesSectionProps {
   tokens: Partial<Record<TokenColor, number>>;

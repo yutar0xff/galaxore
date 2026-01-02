@@ -1,5 +1,5 @@
 {
-  "name": "@galaxore/server",
+  "name": "@local-splendor/server",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -8,7 +8,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@galaxore/shared": "workspace:*",
+    "@local-splendor/shared": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",

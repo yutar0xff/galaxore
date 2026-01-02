@@ -1,8 +1,8 @@
-export type OreColor = 'emerald' | 'sapphire' | 'ruby' | 'diamond' | 'onyx';
-export type TokenColor = OreColor | 'gold';
+export type GemColor = 'emerald' | 'sapphire' | 'ruby' | 'diamond' | 'onyx';
+export type TokenColor = GemColor | 'gold';
 
 export interface Cost {
-  [key: string]: number; // OreColor: quantity
+  [key: string]: number; // GemColor: quantity
 }
 
 export interface Card {
@@ -10,13 +10,13 @@ export interface Card {
   level: 1 | 2 | 3;
   points: number;
   cost: Cost;
-  ore: OreColor; // Bonus provided
+  gem: GemColor; // Bonus provided
 }
 
 export interface Noble {
   id: string;
   points: number;
-  requirements: Cost; // Bonus ores required
+  requirements: Cost; // Bonus gems required
   imageIndex?: number; // 0-5, assigned at game start
 }
 
@@ -61,7 +61,7 @@ export interface LastActionInfo {
   tokens?: { [key in TokenColor]?: number }; // Tokens taken or discarded
 }
 
-export type ActionType = 'TAKE_ORES' | 'RESERVE_CARD' | 'BUY_CARD' | 'DISCARD_TOKENS' | 'SET_WINNING_SCORE';
+export type ActionType = 'TAKE_GEMS' | 'RESERVE_CARD' | 'BUY_CARD' | 'DISCARD_TOKENS' | 'SET_WINNING_SCORE';
 
 export interface Action {
   type: ActionType;

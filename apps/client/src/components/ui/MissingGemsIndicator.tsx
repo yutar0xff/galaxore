@@ -1,36 +1,36 @@
 import React from "react";
-import { OreColor } from "@galaxore/shared";
+import { GemColor } from "@local-splendor/shared";
 import clsx from "clsx";
-import { ORE_BORDER_COLORS_WITH_GOLD, ORE_ORDER } from "../../constants/ores";
-import { ORE_IMAGES } from "./Token";
+import { GEM_BORDER_COLORS_WITH_GOLD, GEM_ORDER } from "../../constants/gems";
+import { GEM_IMAGES } from "./Token";
 
-interface MissingOresIndicatorProps {
-  missingOres: Record<OreColor, number>;
+interface MissingGemsIndicatorProps {
+  missingGems: Record<GemColor, number>;
 }
 
-export function MissingOresIndicator({
-  missingOres,
-}: MissingOresIndicatorProps) {
-  const hasMissingOres = Object.values(missingOres).some((v) => v > 0);
+export function MissingGemsIndicator({
+  missingGems,
+}: MissingGemsIndicatorProps) {
+  const hasMissingGems = Object.values(missingGems).some((v) => v > 0);
 
-  if (!hasMissingOres) return null;
+  if (!hasMissingGems) return null;
 
   return (
     <div className="absolute -top-12 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
       <div className="flex items-center gap-1.5">
-        {ORE_ORDER.map((color) => {
-          const missing = missingOres[color];
+        {GEM_ORDER.map((color) => {
+          const missing = missingGems[color];
           if (missing <= 0) return null;
           return (
             <div key={color} className="relative">
               <div
                 className={clsx(
                   "h-6 w-6 overflow-hidden rounded-sm border",
-                  ORE_BORDER_COLORS_WITH_GOLD[color],
+                  GEM_BORDER_COLORS_WITH_GOLD[color],
                 )}
               >
                 <img
-                  src={ORE_IMAGES[color]}
+                  src={GEM_IMAGES[color]}
                   alt={color}
                   className="h-full w-full scale-150 object-cover"
                 />

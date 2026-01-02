@@ -4,13 +4,13 @@ import { useGame } from "../hooks/useGame";
 import { Card, CardBack } from "./ui/Card";
 import { Modal } from "./ui/Modal";
 import { Noble } from "./ui/Noble";
-import { Token, ORE_IMAGES } from "./ui/Token";
-import { OreColor, TokenColor, Card as CardType } from "@galaxore/shared";
+import { Token, GEM_IMAGES } from "./ui/Token";
+import { GemColor, TokenColor, Card as CardType } from "@local-splendor/shared";
 import { QRCodeSVG } from "qrcode.react";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import useSound from "use-sound";
-import { ORE_ORDER } from "../constants/ores";
+import { GEM_ORDER } from "../constants/gems";
 import { ControlsSection } from "./board/ControlsSection";
 import { NoblesSection } from "./board/NoblesSection";
 import { ResourcesSection } from "./board/ResourcesSection";
@@ -75,9 +75,7 @@ export function BoardView() {
   }, []);
 
   // 本番環境では固定URLを使用、ローカル環境では動的に生成
-  const isProduction =
-    window.location.hostname === "galaxore.pages.dev" ||
-    window.location.hostname.includes("pages.dev");
+  const isProduction = window.location.hostname === "splendor-web.pages.dev" || window.location.hostname.includes("pages.dev");
   const joinUrl = roomId
     ? isProduction
       ? `${PRODUCTION_CLIENT_URL}/?roomId=${roomId}`

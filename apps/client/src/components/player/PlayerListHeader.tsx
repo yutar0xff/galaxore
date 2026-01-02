@@ -1,5 +1,5 @@
 import React from "react";
-import { Player } from "@galaxore/shared";
+import { Player } from "@local-splendor/shared";
 import clsx from "clsx";
 import { ChevronRight } from "lucide-react";
 

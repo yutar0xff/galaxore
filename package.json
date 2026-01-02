@@ -1,8 +1,8 @@
 {
-  "name": "galaxore-root",
+  "name": "local-splendor-root",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @galaxore/shared run build && pnpm -r --parallel --if-present run dev",
+    "dev": "pnpm --filter @local-splendor/shared run build && pnpm -r --parallel --if-present run dev",
     "build": "pnpm -r run build",
     "test": "pnpm -r run test"
   },

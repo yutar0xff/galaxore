@@ -1,4 +1,4 @@
-import { Card, OreColor, Noble } from '@galaxore/shared';
+import { Card, GemColor, Noble } from '@local-splendor/shared';
 
 const CSV_DATA = `Level,Color,PV,Black,Blue,Green,Red,White
 1,Black,0,0,1,1,1,1
@@ -101,14 +101,14 @@ const parseCards = (): { 1: Card[], 2: Card[], 3: Card[] } => {
         const level = parseInt(levelStr) as 1 | 2 | 3;
         const points = parseInt(pvStr);
 
-        // Map CSV color to OreColor
-        let ore: OreColor;
+        // Map CSV color to GemColor
+        let gem: GemColor;
         switch(colorStr) {
-            case 'Black': ore = 'onyx'; break;
-            case 'Blue': ore = 'sapphire'; break;
-            case 'Green': ore = 'emerald'; break;
-            case 'Red': ore = 'ruby'; break;
-            case 'White': ore = 'diamond'; break;
+            case 'Black': gem = 'onyx'; break;
+            case 'Blue': gem = 'sapphire'; break;
+            case 'Green': gem = 'emerald'; break;
+            case 'Red': gem = 'ruby'; break;
+            case 'White': gem = 'diamond'; break;
             default: throw new Error(`Unknown color: ${colorStr}`);
         }
 
@@ -116,7 +116,7 @@ const parseCards = (): { 1: Card[], 2: Card[], 3: Card[] } => {
             id: `card-${level}-${index}`,
             level,
             points,
-            ore,
+            gem,
             cost: {
                 onyx: parseInt(black),
                 sapphire: parseInt(blue),

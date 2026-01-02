@@ -44,7 +44,7 @@ export function SettingsModal({
             <button
               onClick={() => handleScoreChange(-1)}
               disabled={winningScore <= MIN_WINNING_SCORE}
-              className="rounded-lg bg-slate-700 p-2 text-white transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-slate-700 p-2 text-white transition-colors hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Minus size={20} />
             </button>
@@ -54,7 +54,7 @@ export function SettingsModal({
             <button
               onClick={() => handleScoreChange(1)}
               disabled={winningScore >= MAX_WINNING_SCORE}
-              className="rounded-lg bg-slate-700 p-2 text-white transition-colors hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-slate-700 p-2 text-white transition-colors hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Plus size={20} />
             </button>

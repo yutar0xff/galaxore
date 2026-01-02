@@ -1,5 +1,5 @@
 import React from "react";
-import { Noble as NobleType } from "@galaxore/shared";
+import { Noble as NobleType } from "@local-splendor/shared";
 import clsx from "clsx";
 import { Noble } from "../ui/Noble";
 

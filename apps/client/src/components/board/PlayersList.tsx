@@ -1,13 +1,13 @@
 import React from "react";
-import { Player, OreColor, TokenColor } from "@galaxore/shared";
+import { Player, GemColor, TokenColor } from "@local-splendor/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import {
-  ORE_BORDER_COLORS,
-  ORE_ORDER,
+  GEM_BORDER_COLORS,
+  GEM_ORDER,
   ALL_TOKEN_COLORS,
-} from "../../constants/ores";
-import { ORE_IMAGES } from "../ui/Token";
+} from "../../constants/gems";
+import { GEM_IMAGES } from "../ui/Token";
 import { calculateNoblesVisited, calculateBonuses } from "../../utils/game";
 
 interface PlayersListProps {
@@ -83,7 +83,7 @@ export function PlayersList({ players, currentPlayerIndex }: PlayersListProps) {
                         )}
                       >
                         <img
-                          src={ORE_IMAGES[color]}
+                          src={GEM_IMAGES[color]}
                           alt={color}
                           className="h-full w-full scale-150 object-cover"
                         />
@@ -100,18 +100,18 @@ export function PlayersList({ players, currentPlayerIndex }: PlayersListProps) {
 
               {/* Bonuses */}
               <div className="flex min-h-[56px] flex-wrap gap-2">
-                {ORE_ORDER.map((color) => {
+                {GEM_ORDER.map((color) => {
                   const count = bonuses[color] || 0;
                   return count > 0 ? (
                     <div key={color} className="relative flex-shrink-0">
                       <div
                         className={clsx(
                           "h-14 w-14 overflow-hidden rounded-sm border-2 shadow-sm",
-                          ORE_BORDER_COLORS[color],
+                          GEM_BORDER_COLORS[color],
                         )}
                       >
                         <img
-                          src={ORE_IMAGES[color]}
+                          src={GEM_IMAGES[color]}
                           alt={color}
                           className="h-full w-full scale-150 object-cover"
                         />

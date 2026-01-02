@@ -1,8 +1,8 @@
 import React from "react";
-import { TokenColor, OreColor } from "@galaxore/shared";
+import { TokenColor, GemColor } from "@local-splendor/shared";
 import clsx from "clsx";
 import { ComponentSize } from "../../types/ui";
-import { ORE_IMAGES } from "../../constants/ores";
+import { GEM_IMAGES } from "../../constants/gems";
 
 const COLORS: Record<TokenColor, string> = {
   emerald: "bg-green-500",
@@ -13,8 +13,8 @@ const COLORS: Record<TokenColor, string> = {
   gold: "bg-yellow-400",
 };
 
-// Re-export ORE_IMAGES for backward compatibility
-export { ORE_IMAGES };
+// Re-export GEM_IMAGES for backward compatibility
+export { GEM_IMAGES };
 
 const TOKEN_SIZES = {
   sm: { container: "w-8 h-8", text: "text-xs", badge: "text-sm px-1.5" },
@@ -27,20 +27,20 @@ const TOKEN_SIZES = {
   xl: { container: "w-24 h-24", text: "text-2xl", badge: "text-2xl px-3 py-1" },
 };
 
-// Cropped ore image component - removes ~25% padding from each side
-export function OreImage({
+// Cropped gem image component - removes ~25% padding from each side
+export function GemImage({
   color,
   className,
 }: {
-  color: OreColor | TokenColor;
+  color: GemColor | TokenColor;
   className?: string;
 }) {
-  const oreImage = ORE_IMAGES[color];
-  if (!oreImage) return null;
+  const gemImage = GEM_IMAGES[color];
+  if (!gemImage) return null;
 
   return (
     <img
-      src={oreImage}
+      src={gemImage}
       alt={color}
       className={clsx("scale-150 object-cover", className)}
     />
@@ -59,7 +59,7 @@ export function Token({
   onClick?: () => void;
 }) {
   const s = TOKEN_SIZES[size];
-  const oreImage = ORE_IMAGES[color];
+  const gemImage = GEM_IMAGES[color];
 
   return (
     <div className="relative cursor-pointer" onClick={onClick}>
@@ -84,7 +84,7 @@ export function Token({
         )}
       >
         <img
-          src={oreImage}
+          src={gemImage}
           alt={color}
           className="h-full w-full scale-150 object-cover"
         />

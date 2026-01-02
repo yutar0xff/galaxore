@@ -1,8 +1,8 @@
 import React from "react";
-import { Noble as NobleType, OreColor } from "@galaxore/shared";
+import { Noble as NobleType, GemColor } from "@local-splendor/shared";
 import clsx from "clsx";
 import { ComponentSize } from "../../types/ui";
-import { ORE_ORDER, ORE_BORDER_COLORS, ORE_IMAGES } from "../../constants/ores";
+import { GEM_ORDER, GEM_BORDER_COLORS, GEM_IMAGES } from "../../constants/gems";
 import { NOBLE_IMAGES } from "../../constants/images";
 
 const NOBLE_SIZES = {
@@ -98,7 +98,7 @@ export function Noble({
             s.rowGap,
           )}
         >
-          {ORE_ORDER.map((color) => {
+          {GEM_ORDER.map((color) => {
             const count = noble.requirements[color] || 0;
             return (
               count > 0 && (
@@ -109,11 +109,11 @@ export function Noble({
                       className={clsx(
                         "overflow-hidden rounded-sm border shadow-sm",
                         s.square,
-                        ORE_BORDER_COLORS[color],
+                        GEM_BORDER_COLORS[color],
                       )}
                     >
                       <img
-                        src={ORE_IMAGES[color]}
+                        src={GEM_IMAGES[color]}
                         alt={color}
                         className="h-full w-full scale-150 object-cover"
                       />

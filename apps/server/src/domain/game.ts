@@ -4,17 +4,17 @@ import {
   Card,
   Noble,
   TokenColor,
-  OreColor,
+  GemColor,
   INITIAL_TOKENS,
   NOBLES_COUNT,
   BOARD_CARDS_COUNT,
   WINNING_SCORE,
   MAX_RESERVED_CARDS,
-  ORE_COLORS,
-} from '@galaxore/shared';
+  GEM_COLORS,
+} from '@local-splendor/shared';
 import { CARDS_1, CARDS_2, CARDS_3, NOBLES } from './card-data';
 
-export class GalaxoreGame {
+export class SplendorGame {
   private state: GameState;
   private decks: { 1: Card[]; 2: Card[]; 3: Card[] };
 
@@ -95,34 +95,34 @@ export class GalaxoreGame {
       this.state.winningScore = score;
   }
 
-  public takeOres(playerId: string, ores: OreColor[]) {
+  public takeGems(playerId: string, gems: GemColor[]) {
     this.validateTurn(playerId);
 
     const boardTokens = this.state.board.tokens;
 
-    if (ores.length === 3) {
-      if (new Set(ores).size !== 3) throw new Error("Must choose 3 different colors");
-      ores.forEach(color => {
+    if (gems.length === 3) {
+      if (new Set(gems).size !== 3) throw new Error("Must choose 3 different colors");
+      gems.forEach(color => {
          if ((boardTokens[color] || 0) < 1) throw new Error(`Not enough ${color} tokens`);
       });
-    } else if (ores.length === 2) {
-      if (ores[0] !== ores[1]) throw new Error("Must be same color for 2 tokens");
-      if ((boardTokens[ores[0]] || 0) < 4) throw new Error(`Need at least 4 tokens to take 2`);
+    } else if (gems.length === 2) {
+      if (gems[0] !== gems[1]) throw new Error("Must be same color for 2 tokens");
+      if ((boardTokens[gems[0]] || 0) < 4) throw new Error(`Need at least 4 tokens to take 2`);
     } else {
-      throw new Error("Invalid ore selection count");
+      throw new Error("Invalid gem selection count");
     }
 
     const player = this.getPlayer(playerId);
-    ores.forEach(color => {
+    gems.forEach(color => {
       this.state.board.tokens[color]! -= 1;
       player.tokens[color] = (player.tokens[color] || 0) + 1;
     });
 
     const tokensTaken: Record<string, number> = {};
-    ores.forEach(ore => tokensTaken[ore] = (tokensTaken[ore] || 0) + 1);
+    gems.forEach(g => tokensTaken[g] = (tokensTaken[g] || 0) + 1);
 
     this.state.lastAction = {
-        type: 'TAKE_ORES',
+        type: 'TAKE_GEMS',
         playerName: player.name,
         tokens: tokensTaken
     };
@@ -184,7 +184,7 @@ export class GalaxoreGame {
             }
         }
 
-        for (const color of ORE_COLORS) {
+        for (const color of GEM_COLORS) {
             if (color === 'gold') continue;
             const req = Math.max(0, (cost[color] || 0) - (discount[color] || 0));
             const paid = paymentDetails[color] || 0;
@@ -204,7 +204,7 @@ export class GalaxoreGame {
     } else {
         // Default auto-calculation
         let goldNeeded = 0;
-        for (const color of ORE_COLORS) {
+        for (const color of GEM_COLORS) {
           if (color === 'gold') continue;
           const req = Math.max(0, (cost[color] || 0) - (discount[color] || 0));
           const available = player.tokens[color] || 0;
@@ -222,8 +222,8 @@ export class GalaxoreGame {
     }
 
     Object.entries(payment).forEach(([color, amount]) => {
-      player.tokens[color as OreColor]! -= amount;
-      this.state.board.tokens[color as OreColor]! += amount;
+      player.tokens[color as GemColor]! -= amount;
+      this.state.board.tokens[color as GemColor]! += amount;
     });
 
 
@@ -307,10 +307,10 @@ export class GalaxoreGame {
     }
   }
 
-  private getPlayerDiscount(player: Player): { [key in OreColor]?: number } {
-    const discount: { [key in OreColor]?: number } = {};
+  private getPlayerDiscount(player: Player): { [key in GemColor]?: number } {
+    const discount: { [key in GemColor]?: number } = {};
     player.cards.forEach(c => {
-      discount[c.ore] = (discount[c.ore] || 0) + 1;
+      discount[c.gem] = (discount[c.gem] || 0) + 1;
     });
     return discount;
   }
@@ -318,7 +318,7 @@ export class GalaxoreGame {
   private checkNobles(player: Player) {
     const discount = this.getPlayerDiscount(player);
     const nobleIndex = this.state.board.nobles.findIndex(n => {
-      return Object.entries(n.requirements).every(([color, count]) => (discount[color as OreColor] || 0) >= count);
+      return Object.entries(n.requirements).every(([color, count]) => (discount[color as GemColor] || 0) >= count);
     });
 
     if (nobleIndex !== -1) {
