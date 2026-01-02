@@ -26,7 +26,7 @@ const getRandomPlanetName = () => {
   return PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)];
 };
 
-// ローカル環境かどうかを判定
+  // ローカル環境かどうかを判定
 const isLocalEnvironment = () => {
   return (
     !window.location.hostname.includes("pages.dev") &&
