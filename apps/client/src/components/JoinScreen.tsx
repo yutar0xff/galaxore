@@ -26,7 +26,7 @@ const getRandomPlanetName = () => {
   return PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)];
 };
 
-// ローカル環境かどうかを判定
+  // ローカル環境かどうかを判定
 const isLocalEnvironment = () => {
   return (
     !window.location.hostname.includes("pages.dev") &&
@@ -59,6 +59,13 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
     }
     if (name.trim()) {
       localStorage.setItem("galaxore_player_name", name.trim());
+    }
+    // ローカル環境でのみフォールバックを使用
+    const finalRoomId =
+      roomId.trim() || (isLocalEnvironment() ? "default" : "");
+    if (!finalRoomId) {
+      alert(t("Please enter a Room ID"));
+      return;
     }
     // ローカル環境でのみフォールバックを使用
     const finalRoomId =
