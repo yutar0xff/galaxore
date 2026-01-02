@@ -1,19 +1,14 @@
 import React from "react";
-import {
-  Player,
-  GameState,
-  TokenColor,
-  GemColor,
-} from "@local-splendor/shared";
+import { Player, GameState, TokenColor, OreColor } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import clsx from "clsx";
 import { Card } from "../ui/Card";
-import { Token, GEM_IMAGES } from "../ui/Token";
+import { Token, ORE_IMAGES } from "../ui/Token";
 import {
-  GEM_BORDER_COLORS_WITH_GOLD,
-  GEM_ORDER,
+  ORE_BORDER_COLORS_WITH_GOLD,
+  ORE_ORDER,
   ALL_TOKEN_COLORS,
-} from "../../constants/gems";
+} from "../../constants/ores";
 import { changeLanguage as changeLanguageUtil } from "../../utils/i18n";
 import { i18n as I18nType } from "i18next";
 import { MAX_TOKENS } from "../../constants/game";
@@ -27,9 +22,9 @@ interface DashboardProps {
 
 export function Dashboard({ player, gameState, i18n }: DashboardProps) {
   const { t } = useTranslation();
-  const { tokenCounts, bonusCounts, totalTokens, hasAnyGems } =
+  const { tokenCounts, bonusCounts, totalTokens, hasAnyOres } =
     usePlayerStats(player);
-  const allGemColors: GemColor[] = GEM_ORDER;
+  const allOreColors: OreColor[] = ORE_ORDER;
 
   return (
     <div className="flex h-full flex-col">
@@ -76,7 +71,7 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
                   {gameState.lastAction.playerName}
                 </span>
                 <span className="text-sm font-semibold text-gray-300">
-                  {gameState.lastAction.type === "TAKE_GEMS" &&
+                  {gameState.lastAction.type === "TAKE_ORES" &&
                     t("took tokens")}
                   {gameState.lastAction.type === "DISCARD_TOKENS" &&
                     t("discarded tokens")}
@@ -113,11 +108,11 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
               <div
                 className={clsx(
                   "h-10 w-10 overflow-hidden rounded-full border-2 border-gray-500 shadow-md",
-                  GEM_BORDER_COLORS_WITH_GOLD[c],
+                  ORE_BORDER_COLORS_WITH_GOLD[c],
                 )}
               >
                 <img
-                  src={GEM_IMAGES[c]}
+                  src={ORE_IMAGES[c]}
                   className="h-full w-full scale-150 object-cover"
                 />
               </div>
@@ -160,11 +155,11 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
         </div>
       </div>
 
-      {/* Owned Gems Section - columns by color */}
+      {/* Owned Ores Section - columns by color */}
       <div className="custom-scrollbar mb-24 flex-1 overflow-y-auto px-4">
         <div className="mb-6 flex items-baseline justify-between border-b border-gray-700 pb-3">
           <h3 className="text-lg font-bold tracking-wider text-gray-400 uppercase">
-            {t("Owned Gems")}
+            {t("Owned Ores")}
           </h3>
           <div
             className={clsx(
@@ -179,7 +174,7 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
         </div>
         <div className="flex flex-wrap justify-start gap-6">
           {/* Each color column: squares (bonuses) on top, circles (tokens) below */}
-          {allGemColors.map((color) => {
+          {allOreColors.map((color) => {
             const bonus = bonusCounts[color] || 0;
             const token = tokenCounts[color] || 0;
             if (bonus === 0 && token === 0) return null;
@@ -192,11 +187,11 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
                     key={`b-${i}`}
                     className={clsx(
                       "h-16 w-16 transform overflow-hidden rounded-xl border-4 shadow-lg transition-transform active:scale-95",
-                      GEM_BORDER_COLORS_WITH_GOLD[color],
+                      ORE_BORDER_COLORS_WITH_GOLD[color],
                     )}
                   >
                     <img
-                      src={GEM_IMAGES[color]}
+                      src={ORE_IMAGES[color]}
                       alt={color}
                       className="h-full w-full scale-150 object-cover"
                     />
@@ -208,11 +203,11 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
                     key={`t-${i}`}
                     className={clsx(
                       "h-20 w-20 transform overflow-hidden rounded-full border-4 shadow-lg transition-transform active:scale-95",
-                      GEM_BORDER_COLORS_WITH_GOLD[color],
+                      ORE_BORDER_COLORS_WITH_GOLD[color],
                     )}
                   >
                     <img
-                      src={GEM_IMAGES[color]}
+                      src={ORE_IMAGES[color]}
                       alt={color}
                       className="h-full w-full scale-150 object-cover"
                     />
@@ -230,7 +225,7 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
                   className="h-20 w-20 transform overflow-hidden rounded-full border-4 border-yellow-600 shadow-lg transition-transform active:scale-95"
                 >
                   <img
-                    src={GEM_IMAGES["gold"]}
+                    src={ORE_IMAGES["gold"]}
                     alt="gold"
                     className="h-full w-full scale-150 object-cover"
                   />
@@ -239,9 +234,9 @@ export function Dashboard({ player, gameState, i18n }: DashboardProps) {
             </div>
           )}
         </div>
-        {!hasAnyGems && (
+        {!hasAnyOres && (
           <span className="mt-10 block text-center text-2xl font-semibold text-gray-500">
-            {t("No Gems")}
+            {t("No Ores")}
           </span>
         )}
       </div>

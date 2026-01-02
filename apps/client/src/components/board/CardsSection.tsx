@@ -1,5 +1,5 @@
 import React from "react";
-import { Card as CardType } from "@local-splendor/shared";
+import { Card as CardType } from "@galaxore/shared";
 import { Card, CardBack } from "../ui/Card";
 import { CardLevel } from "../../types/game";
 import { CARD_LEVELS } from "../../constants/game";

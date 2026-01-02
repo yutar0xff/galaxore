@@ -1,12 +1,12 @@
 import React from "react";
-import { Player, GameState, Card as CardType } from "@local-splendor/shared";
+import { Player, GameState, Card as CardType } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import { ResourcesHeader } from "./ResourcesHeader";
 import { PaymentModal } from "./PaymentModal";
 import { TokenPayment } from "../../types/game";
 import { CARD_LEVELS } from "../../constants/game";
 import { CardItem } from "../ui/CardItem";
-import { canAffordCard, getMissingGems } from "../../utils/game";
+import { canAffordCard, getMissingOres } from "../../utils/game";
 
 interface BuyCardViewProps {
   player: Player;
@@ -46,13 +46,13 @@ export function BuyCardView({
           <div className="flex snap-x gap-4 overflow-x-auto px-2 pt-14 pb-2">
             {player.reserved.map((card) => {
               const affordable = canAffordCard(card, player);
-              const missingGems = getMissingGems(card, player);
+              const missingOres = getMissingOres(card, player);
               return (
                 <CardItem
                   key={card.id}
                   card={card}
                   affordable={affordable}
-                  missingGems={missingGems}
+                  missingOres={missingOres}
                   onClick={() => onCardClick(card)}
                   isMyTurn={isMyTurn}
                   onAlert={onAlert}
@@ -71,13 +71,13 @@ export function BuyCardView({
           <div className="flex snap-x gap-4 overflow-x-auto pt-14 pb-4">
             {gameState.board.cards[level].map((card) => {
               const affordable = canAffordCard(card, player);
-              const missingGems = getMissingGems(card, player);
+              const missingOres = getMissingOres(card, player);
               return (
                 <CardItem
                   key={card.id}
                   card={card}
                   affordable={affordable}
-                  missingGems={missingGems}
+                  missingOres={missingOres}
                   onClick={() => onCardClick(card)}
                   isMyTurn={isMyTurn}
                   onAlert={onAlert}

@@ -1,7 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import { EVENTS, Action, ActionType, GemColor } from '@local-splendor/shared';
-import { SplendorGame } from './domain/game';
+import { EVENTS, Action, ActionType, OreColor } from '@galaxore/shared';
+import { GalaxoreGame } from './domain/game';
 
 interface Room {
   players: string[]; // userIds
@@ -9,7 +9,7 @@ interface Room {
   playerSockets: Map<string, string>; // userId -> socketId
   boardUsers: string[]; // socketIds
   boardUserNames: Map<string, string>; // socketId -> name
-  game?: SplendorGame;
+  game?: GalaxoreGame;
 }
 
 export class SocketServer {
@@ -17,8 +17,8 @@ export class SocketServer {
   private rooms: Map<string, Room> = new Map();
 
   constructor(httpServer: HttpServer) {
-    // CORS設定: 環境変数で許可するオリジンを指定可能
-    // 未設定の場合は全許可（ローカル開発用）
+    // CORS設宝E 環墝E��数㝧許坯㝙るオリジンを指定坯能
+    // 未設定�E場坈�E全許坯�E�ローカル開発用�E�E
     const allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
       : '*';
@@ -106,7 +106,7 @@ export class SocketServer {
             name: room.playerNames.get(id) || `Player`
         }));
 
-        room.game = new SplendorGame(playerConfigs);
+        room.game = new GalaxoreGame(playerConfigs);
         this.broadcastState(roomId);
       });
 
@@ -159,8 +159,8 @@ export class SocketServer {
 
         try {
           switch (action.type) {
-            case 'TAKE_GEMS':
-              room.game.takeGems(userId, action.payload.gems);
+            case 'TAKE_ORES':
+              room.game.takeOres(userId, action.payload.ores);
               break;
             case 'RESERVE_CARD':
               room.game.reserveCard(userId, action.payload.cardId);

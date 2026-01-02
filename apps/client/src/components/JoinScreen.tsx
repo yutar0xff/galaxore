@@ -26,7 +26,7 @@ const getRandomPlanetName = () => {
   return PLANET_NAMES[Math.floor(Math.random() * PLANET_NAMES.length)];
 };
 
-  // ローカル環境かどうかを判定
+// ローカル環境かどうかを判定
 const isLocalEnvironment = () => {
   return (
     !window.location.hostname.includes("pages.dev") &&
@@ -41,7 +41,7 @@ const isLocalEnvironment = () => {
 export function JoinScreen({ onJoin }: JoinScreenProps) {
   const { t } = useTranslation();
   const defaultName = useMemo(
-    () => localStorage.getItem("splendor_player_name") || getRandomPlanetName(),
+    () => localStorage.getItem("galaxore_player_name") || getRandomPlanetName(),
     [],
   );
   // ローカル環境でのみデフォルト値を設定
@@ -58,7 +58,7 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
       return;
     }
     if (name.trim()) {
-      localStorage.setItem("splendor_player_name", name.trim());
+      localStorage.setItem("galaxore_player_name", name.trim());
     }
     // ローカル環境でのみフォールバックを使用
     const finalRoomId =
@@ -74,7 +74,7 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
     <div className="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-900 p-4 text-white">
       <div className="w-full max-w-2xl space-y-4 px-4 text-center">
         <h1 className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text font-serif text-5xl font-black tracking-tight break-words text-transparent italic drop-shadow-2xl sm:text-6xl md:text-7xl lg:text-8xl">
-          Splendor
+          Galaxore
         </h1>
         <p className="text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
           {t("Local Multiplayer")}

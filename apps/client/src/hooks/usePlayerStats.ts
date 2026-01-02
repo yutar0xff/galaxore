@@ -1,6 +1,6 @@
-import { Player, GemColor, TokenColor } from "@local-splendor/shared";
+import { Player, OreColor, TokenColor } from "@galaxore/shared";
 import { calculateTokenCounts, calculateBonuses } from "../utils/game";
-import { GEM_ORDER } from "../constants/gems";
+import { ORE_ORDER } from "../constants/ores";
 
 export function usePlayerStats(player: Player) {
   const tokenCounts = calculateTokenCounts(player);
@@ -11,14 +11,14 @@ export function usePlayerStats(player: Player) {
     0,
   );
 
-  const hasAnyGems =
-    GEM_ORDER.some((c) => bonusCounts[c] > 0 || tokenCounts[c] > 0) ||
+  const hasAnyOres =
+    ORE_ORDER.some((c) => bonusCounts[c] > 0 || tokenCounts[c] > 0) ||
     tokenCounts["gold"] > 0;
 
   return {
     tokenCounts,
     bonusCounts,
     totalTokens,
-    hasAnyGems,
+    hasAnyOres,
   };
 }

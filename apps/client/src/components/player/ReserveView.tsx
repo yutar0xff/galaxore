@@ -1,5 +1,5 @@
 import React from "react";
-import { Player, GameState, Card as CardType } from "@local-splendor/shared";
+import { Player, GameState, Card as CardType } from "@galaxore/shared";
 import { useTranslation } from "react-i18next";
 import { Card } from "../ui/Card";
 import { ResourcesHeader } from "./ResourcesHeader";

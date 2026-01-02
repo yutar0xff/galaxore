@@ -1,6 +1,6 @@
-# Local Splendor
+# Galaxore
 
-ローカルネットワークで遊べるSplendorクローンゲームです。
+Splendorに着想を得た、鉱石（ore）を集めて発展を目指すボードゲームです。
 
 ## 著作権について
 
@@ -15,8 +15,8 @@
 
 ## オンラインでプレイ
 
-- **本番環境**: https://splendor-web.pages.dev/
-- **サーバー**: https://splendor-web-server.up.railway.app/
+- **本番環境**: https://galaxore.pages.dev/
+- **サーバー**: https://galaxore-server.up.railway.app/
 
 ## 起動方法
 
@@ -65,7 +65,7 @@ HOST_IP=192.168.1.15
 **PowerShellを管理者として実行**し、以下のコマンドを実行してファイアウォールでポートを開放します。
 
 ```powershell
-New-NetFirewallRule -DisplayName "Splendor Local Game" -Direction Inbound -LocalPort 3001,5173 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "Galaxore Local Game" -Direction Inbound -LocalPort 3001,5173 -Protocol TCP -Action Allow
 ```
 
 ### 手順4: ゲーム起動とQRコード読み取り
