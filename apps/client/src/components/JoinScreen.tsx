@@ -54,6 +54,10 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
         <p className="text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
           {t("Local Multiplayer")}
         </p>
+        <p className="mt-2 text-[10px] text-gray-500 opacity-60">
+          Unofficial fan project · Splendor™ is a trademark of Space Cowboys /
+          Asmodee Group
+        </p>
       </div>
 
       <div className="flex w-full max-w-md flex-col space-y-8 rounded-[2.5rem] border border-white/10 bg-gray-800/50 p-10 shadow-2xl backdrop-blur-xl">

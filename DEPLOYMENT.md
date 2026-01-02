@@ -51,15 +51,19 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 |--------|-----|------|
 | `NODE_ENV` | `production` | 本番環境フラグ |
 | `PORT` | （自動設定） | Railwayが自動的に設定（読み取り専用） |
-| `CORS_ORIGIN` | `https://your-app.pages.dev` | Cloudflare PagesのURL（カンマ区切りで複数指定可能） |
+| `CORS_ORIGIN` | `https://splendor-web.pages.dev` | Cloudflare PagesのURL（カンマ区切りで複数指定可能） |
 
 **注意**: `CORS_ORIGIN`には、デプロイ後のCloudflare PagesのURLを設定してください。
+
+**本番環境のURL**:
+- クライアント: https://splendor-web.pages.dev/
+- サーバー: https://splendor-web-server.up.railway.app/
 
 ### 1.4 デプロイの確認
 
 1. Railwayダッシュボードで「Deployments」を確認
 2. デプロイが成功したら、「Settings」→「Domains」で公開URLを確認
-3. サーバーURLをメモしておく（例: `https://your-app.railway.app`）
+3. サーバーURL: https://splendor-web-server.up.railway.app/
 
 ## 2. Cloudflare Pages（クライアント）のデプロイ
 
@@ -78,11 +82,11 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 |------|-----|
 | **Project name** | `local-splendor-client`（任意） |
 | **Production branch** | `main` または `master` |
-| **Build command** | `cd apps/client && pnpm install && pnpm build` |
+| **Build command** | `pnpm run build`（ルートディレクトリから実行） |
 | **Build output directory** | `apps/client/dist` |
 | **Root directory** | （空欄のまま） |
 
-**注意**: モノレポのため、ルートディレクトリで `pnpm install` を実行する必要があります。ビルドコマンドで `cd` を使用しています。
+**注意**: モノレポのため、ルートディレクトリで `pnpm install` を実行する必要があります。ビルドコマンドはルートディレクトリの `pnpm run build` を使用することで、共有パッケージを先にビルドしてからクライアントをビルドします。
 
 ### 2.3 環境変数の設定
 
@@ -90,30 +94,32 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 
 | 変数名 | 値 | 説明 |
 |--------|-----|------|
-| `VITE_SERVER_URL` | `https://your-app.railway.app` | RailwayのサーバーURL（上記1.4で確認したURL） |
+| `VITE_SERVER_URL` | `https://splendor-web-server.up.railway.app` | RailwayのサーバーURL |
 
-**重要**: RailwayのURLが確定してから設定してください。
+**本番環境のURL**:
+- クライアント: https://splendor-web.pages.dev/
+- サーバー: https://splendor-web-server.up.railway.app/
 
 ### 2.4 デプロイの確認
 
 1. 「Deployments」タブでデプロイ状況を確認
-2. デプロイが成功したら、公開URLを確認（例: `https://your-app.pages.dev`）
-3. このURLをRailwayの `CORS_ORIGIN` 環境変数に追加
+2. デプロイが成功したら、公開URLを確認: https://splendor-web.pages.dev/
+3. このURLをRailwayの `CORS_ORIGIN` 環境変数に設定
 
 ## 3. 環境変数の相互設定
 
 ### 3.1 Railway側のCORS設定を更新
 
-Cloudflare PagesのURLが確定したら、Railwayの環境変数 `CORS_ORIGIN` を更新：
+Railwayの環境変数 `CORS_ORIGIN` を設定：
 
 ```
-https://your-app.pages.dev
+https://splendor-web.pages.dev
 ```
 
 複数のドメインを許可する場合（例: プレビュー環境も含める）:
 
 ```
-https://your-app.pages.dev,https://preview.your-app.pages.dev
+https://splendor-web.pages.dev,https://preview-splendor-web.pages.dev
 ```
 
 ### 3.2 動作確認
@@ -172,6 +178,13 @@ pnpm dev
 1. モノレポの依存関係が正しくインストールされているか
 2. 共有パッケージ（`@local-splendor/shared`）が先にビルドされているか
 3. ビルドコマンドが正しく設定されているか
+4. 最新のコードがGitHubにプッシュされているか
+5. Cloudflare Pagesのビルドキャッシュをクリアする（Settings → Builds & deployments → Clear build cache）
+
+**ビルドキャッシュのクリア方法**:
+- Cloudflare Pagesダッシュボードで「Settings」→「Builds & deployments」を開く
+- 「Clear build cache」ボタンをクリック
+- 再度デプロイを実行
 
 ### 5.3 CORSエラー
 
