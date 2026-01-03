@@ -174,7 +174,17 @@ export function PlayerController() {
     gameState.players[gameState.currentPlayerIndex].id === playerId;
 
   if (!player)
-    return <div className="p-4 text-white">{t("Player not found")}</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-900 p-4 text-white">
+        <h2 className="text-2xl font-bold">{t("Player not found")}</h2>
+        <button
+          onClick={() => navigate("/")}
+          className="rounded-lg bg-blue-600 px-6 py-3 font-bold hover:bg-blue-700"
+        >
+          {t("Back to Home")}
+        </button>
+      </div>
+    );
 
   // --- Handlers ---
 
