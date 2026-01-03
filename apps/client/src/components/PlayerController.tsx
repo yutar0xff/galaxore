@@ -131,7 +131,7 @@ export function PlayerController() {
               <p className="mb-4 text-xl font-bold text-green-400">
                 {t("Waiting for game to start...")}
               </p>
-              <p className="mb-4 whitespace-pre-line text-sm italic text-gray-400">
+              <p className="mb-4 text-sm whitespace-pre-line text-gray-400 italic">
                 {t("Game Quote")}
               </p>
               <LoadingSpinner />
