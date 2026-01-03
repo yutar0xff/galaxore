@@ -207,7 +207,7 @@ const resources = {
       "Not your turn": "あなたのターンではありません",
       "Please enter your name": "名前を入力してください",
       "Enter your name": "名前を入力",
-      "Best Experience": "ベストな体験",
+      "Best Experience": "Best Experience",
       "No players yet": "まだプレイヤーがいません",
       Alert: "アラート",
       Confirmation: "確認",
