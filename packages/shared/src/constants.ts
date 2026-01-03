@@ -9,6 +9,8 @@ export const EVENTS = {
   DISCONNECT: 'disconnect',
   RESET_GAME: 'reset_game',
   GAME_RESET: 'game_reset', // Notification to clients that game was reset
+  GET_ROOM_INFO: 'get_room_info', // Get room info without joining
+  SWITCH_DEVICE: 'switch_device', // Switch device for an existing player
 };
 
 export const ORE_COLORS: TokenColor[] = ['ruby', 'emerald', 'sapphire', 'diamond', 'onyx', 'gold'];

@@ -7,12 +7,12 @@ import { PlayerController } from "./components/PlayerController";
 function App() {
   const navigate = useNavigate();
 
-  const handleJoin = (roomId: string, isBoard: boolean, name?: string) => {
+  const handleJoin = (roomId: string, isBoard: boolean, name?: string, switchUserId?: string) => {
     if (isBoard) {
-      navigate(`/board?roomId=${roomId}`);
+      navigate(`/board?roomId=${roomId}${switchUserId ? `&switchUserId=${switchUserId}` : ""}`);
     } else {
       navigate(
-        `/game?roomId=${roomId}${name ? `&name=${encodeURIComponent(name)}` : ""}`,
+        `/game?roomId=${roomId}${name ? `&name=${encodeURIComponent(name)}` : ""}${switchUserId ? `&switchUserId=${switchUserId}` : ""}`,
       );
     }
   };

@@ -35,6 +35,7 @@ export function PlayerController() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get("roomId");
+  const switchUserId = searchParams.get("switchUserId");
 
   const { dialog, showAlert, showConfirm, closeDialog } = useDialog();
 
@@ -46,6 +47,7 @@ export function PlayerController() {
   const { gameState, playerId, lobbyInfo, sendAction, error, setError } =
     useGame(roomId, {
       onGameReset: handleGameReset,
+      switchUserId: switchUserId || undefined,
     });
 
   const [currentView, setCurrentView] = useState<ActionView>("DASHBOARD");
@@ -155,28 +157,11 @@ export function PlayerController() {
               )}
             </div>
 
-            {/* ボードユーザー一覧 */}
+            {/* ボードユーザー数 */}
             <div className="space-y-3">
               <div className="text-xl font-bold">
                 {t("Board Users")}: {lobbyInfo.boardUsers || 0}
               </div>
-              {lobbyInfo.boardUserNames &&
-              lobbyInfo.boardUserNames.length > 0 ? (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {lobbyInfo.boardUserNames.map((name, i) => (
-                    <span
-                      key={i}
-                      className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
-                    >
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500">
-                  {t("No board users yet")}
-                </div>
-              )}
             </div>
           </div>
         )}

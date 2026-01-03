@@ -2,6 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
 import { EVENTS, Action, ActionType, OreColor } from '@galaxore/shared';
 import { GalaxoreGame } from './domain/game';
+import { randomUUID } from 'crypto';
 
 interface Room {
   players: string[]; // userIds
@@ -38,6 +39,64 @@ export class SocketServer {
     this.io.on('connection', (socket: Socket) => {
       console.log(`User connected: ${socket.id}`);
 
+      // Get room info without joining
+      socket.on(EVENTS.GET_ROOM_INFO, ({ roomId }: { roomId: string }, callback?: (info: any) => void) => {
+        const room = this.rooms.get(roomId);
+        if (!room) {
+          const info = {
+            gameStarted: false,
+            players: [],
+            boardUsers: 0,
+            boardUserNames: [],
+          };
+          if (callback) callback(info);
+          return;
+        }
+
+        const info = {
+          gameStarted: !!room.game,
+          players: room.players.map(id => ({
+            id,
+            name: room.playerNames.get(id) || 'Unknown'
+          })),
+          boardUsers: room.boardUsers.length,
+          boardUserNames: room.boardUsers.map(sid => room.boardUserNames.get(sid) || 'Unknown'),
+        };
+        if (callback) callback(info);
+      });
+
+      // Switch device for an existing player
+      socket.on(EVENTS.SWITCH_DEVICE, ({ roomId, targetUserId }: { roomId: string, targetUserId: string }) => {
+        const room = this.rooms.get(roomId);
+        if (!room || !room.game) {
+          socket.emit(EVENTS.ERROR, { message: "Game not found or not started" });
+          return;
+        }
+
+        // Check if target user exists in the game
+        if (!room.players.includes(targetUserId)) {
+          socket.emit(EVENTS.ERROR, { message: "Player not found in game" });
+          return;
+        }
+
+        // Disconnect old socket if exists
+        const oldSocketId = room.playerSockets.get(targetUserId);
+        if (oldSocketId) {
+          const oldSocket = this.io.sockets.sockets.get(oldSocketId);
+          if (oldSocket) {
+            oldSocket.disconnect();
+          }
+        }
+
+        // Update socket mapping
+        room.playerSockets.set(targetUserId, socket.id);
+        socket.join(roomId);
+
+        // Send current game state
+        socket.emit(EVENTS.UPDATE_GAME_STATE, room.game.getState());
+        console.log(`Device switched for user ${targetUserId} to socket ${socket.id}`);
+      });
+
       socket.on(EVENTS.JOIN_ROOM, ({ roomId, asBoard, userId, name }: { roomId: string, asBoard?: boolean, userId?: string, name?: string }) => {
         let room = this.rooms.get(roomId);
         if (!room) {
@@ -47,7 +106,9 @@ export class SocketServer {
 
         if (asBoard) {
           room.boardUsers.push(socket.id);
-          if (name) room.boardUserNames.set(socket.id, name);
+          // ???????????UUID??????????
+          const boardUserId = randomUUID();
+          room.boardUserNames.set(socket.id, boardUserId);
         } else {
           // If no userId provided, fallback to socket.id (should not happen with updated client)
           const uid = userId || socket.id;
@@ -56,6 +117,16 @@ export class SocketServer {
           // Check if player is already in the room (reconnection)
           if (room.players.includes(uid)) {
               console.log(`User ${uid} reconnected with socket ${socket.id}`);
+
+              // Disconnect old socket if exists
+              const oldSocketId = room.playerSockets.get(uid);
+              if (oldSocketId && oldSocketId !== socket.id) {
+                const oldSocket = this.io.sockets.sockets.get(oldSocketId);
+                if (oldSocket) {
+                  oldSocket.disconnect();
+                }
+              }
+
               room.playerSockets.set(uid, socket.id);
               socket.join(roomId);
 
@@ -71,8 +142,34 @@ export class SocketServer {
               return;
           }
 
+          // Game already started - check if we can reconnect with same userId
           if (room.game) {
-            socket.emit(EVENTS.ERROR, { message: "Game already started" });
+            // If userId matches an existing player, allow reconnection
+            if (uid && room.players.includes(uid)) {
+              // Disconnect old socket if exists
+              const oldSocketId = room.playerSockets.get(uid);
+              if (oldSocketId && oldSocketId !== socket.id) {
+                const oldSocket = this.io.sockets.sockets.get(oldSocketId);
+                if (oldSocket) {
+                  oldSocket.disconnect();
+                }
+              }
+
+              room.playerSockets.set(uid, socket.id);
+              socket.join(roomId);
+              socket.emit(EVENTS.UPDATE_GAME_STATE, room.game.getState());
+              console.log(`User ${uid} reconnected to started game with socket ${socket.id}`);
+              return;
+            }
+
+            // Game started but userId doesn't match - return available players for device switch
+            socket.emit(EVENTS.ERROR, {
+              message: "Game already started",
+              availablePlayers: room.players.map(id => ({
+                id,
+                name: room.playerNames.get(id) || 'Unknown'
+              }))
+            });
             return;
           }
           if (room.players.length >= 6) {

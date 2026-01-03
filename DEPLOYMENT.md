@@ -56,8 +56,8 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 **注意**: `CORS_ORIGIN`には、デプロイ後のCloudflare PagesのURLを設定してください。
 
 **本番環境のURL**:
-- クライアント: https://splendor-web.pages.dev/
-- サーバー: https://splendor-web-server.up.railway.app/
+- クライアント: https://galaxore.pages.dev/
+- サーバー: https://galaxore-server.up.railway.app/
 
 ### 1.4 デプロイの確認
 
@@ -97,8 +97,8 @@ Railwayダッシュボードの「Variables」タブで以下を設定：
 | `VITE_SERVER_URL` | `https://galaxore-server.up.railway.app` | RailwayのサーバーURL |
 
 **本番環境のURL**:
-- クライアント: https://splendor-web.pages.dev/
-- サーバー: https://splendor-web-server.up.railway.app/
+- クライアント: https://galaxore.pages.dev/
+- サーバー: https://galaxore-server.up.railway.app/
 
 ### 2.4 デプロイの確認
 
