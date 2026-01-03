@@ -18,7 +18,11 @@ const getUserId = () => {
 
 export const useGame = (
   roomId: string | null,
-  options: { asBoard?: boolean; onGameReset?: () => void; switchUserId?: string } = {},
+  options: {
+    asBoard?: boolean;
+    onGameReset?: () => void;
+    switchUserId?: string;
+  } = {},
 ) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);

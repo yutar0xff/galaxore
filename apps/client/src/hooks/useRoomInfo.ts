@@ -10,7 +10,10 @@ export interface RoomInfo {
   boardUserNames: string[];
 }
 
-export const useRoomInfo = (roomId: string | null, pollInterval: number = 2000) => {
+export const useRoomInfo = (
+  roomId: string | null,
+  pollInterval: number = 2000,
+) => {
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +48,7 @@ export const useRoomInfo = (roomId: string | null, pollInterval: number = 2000) 
           (info: RoomInfo) => {
             setRoomInfo(info);
             setLoading(false);
-          }
+          },
         );
       };
 
@@ -69,7 +72,9 @@ export const useRoomInfo = (roomId: string | null, pollInterval: number = 2000) 
         requestInfo();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch room info");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch room info",
+      );
       setLoading(false);
     }
   };

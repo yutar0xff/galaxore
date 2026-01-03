@@ -76,7 +76,9 @@ export function BoardView() {
   }, []);
 
   // 本番環境では固定URLを使用、ローカル環境では動的に生成
-  const isProduction = window.location.hostname === "galaxore.pages.dev" || window.location.hostname.includes("pages.dev");
+  const isProduction =
+    window.location.hostname === "galaxore.pages.dev" ||
+    window.location.hostname.includes("pages.dev");
   const joinUrl = roomId
     ? isProduction
       ? `${PRODUCTION_CLIENT_URL}/?roomId=${roomId}`
