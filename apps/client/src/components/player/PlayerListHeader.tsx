@@ -17,7 +17,7 @@ export function PlayerListHeader({
   return (
     <div className="sticky top-0 z-50 border-b border-gray-700 bg-gray-900 shadow-lg">
       <div className="px-4 py-2">
-        <div className="flex items-center justify-center gap-2 overflow-x-auto">
+        <div className="flex items-center justify-center gap-2 overflow-x-auto overflow-y-hidden">
           {players.map((player, idx) => {
             const isCurrentPlayer = idx === currentPlayerIndex;
             const isMe = player.id === playerId;
@@ -27,7 +27,7 @@ export function PlayerListHeader({
               <React.Fragment key={player.id}>
                 <span
                   className={clsx(
-                    "flex-shrink-0 rounded-md px-3 py-1 font-serif text-sm font-bold transition-all duration-300",
+                    "flex-shrink-0 rounded-md px-3 py-1 font-serif text-xs font-bold transition-all duration-300",
                     isCurrentPlayer
                       ? "scale-110 bg-gradient-to-br from-amber-600/90 to-amber-700/90 text-white shadow-[0_0_10px_rgba(245,158,11,0.5)]"
                       : isMe

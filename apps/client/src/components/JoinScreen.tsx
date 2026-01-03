@@ -4,6 +4,7 @@ import { useRoomInfo } from "../hooks/useRoomInfo";
 import { getSocket } from "../infrastructure/socket";
 import { EVENTS } from "@galaxore/shared";
 import { Socket } from "socket.io-client";
+import { changeLanguage as changeLanguageUtil } from "../utils/i18n";
 
 interface JoinScreenProps {
   onJoin: (
@@ -56,7 +57,7 @@ const isLocalEnvironment = () => {
 type Step = "roomId" | "playerSelection" | "deviceSwitch";
 
 export function JoinScreen({ onJoin }: JoinScreenProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [step, setStep] = useState<Step>("roomId");
   const [selectedRole, setSelectedRole] = useState<"player" | "board" | null>(
     null,
@@ -210,16 +211,36 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
   if (step === "roomId") {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-900 p-4 text-white">
+        {/* Language Switcher - Top Right */}
+        <div className="absolute top-4 right-4 flex rounded-xl border border-slate-700 bg-slate-800 p-1">
+          <button
+            onClick={() => changeLanguageUtil("en", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "en"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => changeLanguageUtil("ja", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "ja"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            JA
+          </button>
+        </div>
+
         <div className="w-full max-w-2xl space-y-4 px-4 text-center">
           <h1 className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text font-serif text-5xl font-black tracking-tight break-words text-transparent italic drop-shadow-2xl sm:text-6xl md:text-7xl lg:text-8xl">
             Galaxore
           </h1>
-          <p className="text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
-            {t("Local Multiplayer")}
-          </p>
-          <p className="mt-2 text-[10px] text-gray-500 opacity-60">
-            Unofficial fan project · Splendor™ is a trademark of Space Cowboys /
-            Asmodee Group
+          <p className="mt-2 text-xs whitespace-pre-line text-gray-400 opacity-80">
+            {t("Game Subtitle With Copyright")}
           </p>
         </div>
 
@@ -246,14 +267,14 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
 
           <div className="space-y-2">
             <label className="pl-1 text-xs font-black tracking-widest text-gray-500 uppercase">
-              {t("Join as")}
+              Join as
             </label>
             <div className="flex flex-row gap-4">
               <button
                 onClick={() => handleRoleSelect("player")}
                 className="flex-1 rounded-[1.25rem] border border-blue-400/20 bg-gradient-to-br from-blue-600 to-blue-700 py-5 text-2xl font-black shadow-xl transition-all hover:from-blue-500 hover:to-blue-600 active:scale-[0.97]"
               >
-                {t("Player")}
+                Player
               </button>
 
               <button
@@ -286,12 +307,36 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
 
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-900 p-4 text-white">
+        {/* Language Switcher - Top Right */}
+        <div className="absolute top-4 right-4 flex rounded-xl border border-slate-700 bg-slate-800 p-1">
+          <button
+            onClick={() => changeLanguageUtil("en", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "en"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => changeLanguageUtil("ja", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "ja"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            JA
+          </button>
+        </div>
+
         <div className="w-full max-w-2xl space-y-4 px-4 text-center">
           <h1 className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text font-serif text-5xl font-black tracking-tight break-words text-transparent italic drop-shadow-2xl sm:text-6xl md:text-7xl lg:text-8xl">
             Galaxore
           </h1>
-          <p className="text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
-            {t("Local Multiplayer")}
+          <p className="mt-2 text-xs whitespace-pre-line text-gray-400 opacity-80">
+            {t("Game Subtitle With Copyright")}
           </p>
         </div>
 
@@ -365,7 +410,7 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
                   disabled={!name.trim() || isNameTaken}
                   className="flex-1 rounded-[1.25rem] border border-blue-400/20 bg-gradient-to-br from-blue-600 to-blue-700 py-4 text-lg font-black shadow-xl transition-all hover:from-blue-500 hover:to-blue-600 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {t("Join as Player")}
+                  {t("Join")}
                 </button>
               </div>
             </>
@@ -379,11 +424,38 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
   if (step === "deviceSwitch" && roomInfo?.gameStarted) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center space-y-8 bg-gray-900 p-4 text-white">
+        {/* Language Switcher - Top Right */}
+        <div className="absolute top-4 right-4 flex rounded-xl border border-slate-700 bg-slate-800 p-1">
+          <button
+            onClick={() => changeLanguageUtil("en", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "en"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => changeLanguageUtil("ja", i18n)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-bold transition-all ${
+              i18n.language === "ja"
+                ? "bg-blue-600 text-white"
+                : "text-gray-400 hover:bg-slate-700"
+            }`}
+          >
+            JA
+          </button>
+        </div>
+
         <div className="w-full max-w-2xl space-y-4 px-4 text-center">
           <h1 className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 bg-clip-text font-serif text-5xl font-black tracking-tight break-words text-transparent italic drop-shadow-2xl sm:text-6xl md:text-7xl lg:text-8xl">
             Galaxore
           </h1>
-          <p className="text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
+          <p className="mt-2 text-xs whitespace-pre-line text-gray-400 opacity-80">
+            {t("Game Subtitle With Copyright")}
+          </p>
+          <p className="mt-2 text-xs font-bold tracking-[0.4em] text-gray-400 uppercase sm:text-sm">
             {t("Game Already Started")}
           </p>
         </div>
