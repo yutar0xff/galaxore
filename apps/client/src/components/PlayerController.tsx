@@ -35,6 +35,7 @@ export function PlayerController() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const roomId = searchParams.get("roomId");
+  const switchUserId = searchParams.get("switchUserId");
 
   const { dialog, showAlert, showConfirm, closeDialog } = useDialog();
 
@@ -46,6 +47,7 @@ export function PlayerController() {
   const { gameState, playerId, lobbyInfo, sendAction, error, setError } =
     useGame(roomId, {
       onGameReset: handleGameReset,
+      switchUserId: switchUserId || undefined,
     });
 
   const [currentView, setCurrentView] = useState<ActionView>("DASHBOARD");
@@ -155,28 +157,11 @@ export function PlayerController() {
               )}
             </div>
 
-            {/* ボードユーザー一覧 */}
+            {/* ボードユーザー数 */}
             <div className="space-y-3">
               <div className="text-xl font-bold">
                 {t("Board Users")}: {lobbyInfo.boardUsers || 0}
               </div>
-              {lobbyInfo.boardUserNames &&
-              lobbyInfo.boardUserNames.length > 0 ? (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {lobbyInfo.boardUserNames.map((name, i) => (
-                    <span
-                      key={i}
-                      className="rounded-full border border-amber-500/50 bg-amber-600/20 px-4 py-2 font-bold text-amber-300"
-                    >
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500">
-                  {t("No board users yet")}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -189,7 +174,17 @@ export function PlayerController() {
     gameState.players[gameState.currentPlayerIndex].id === playerId;
 
   if (!player)
-    return <div className="p-4 text-white">{t("Player not found")}</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-gray-900 p-4 text-white">
+        <h2 className="text-2xl font-bold">{t("Player not found")}</h2>
+        <button
+          onClick={() => navigate("/")}
+          className="rounded-lg bg-blue-600 px-6 py-3 font-bold hover:bg-blue-700"
+        >
+          {t("Back to Home")}
+        </button>
+      </div>
+    );
 
   // --- Handlers ---
 

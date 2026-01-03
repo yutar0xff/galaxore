@@ -18,7 +18,11 @@ const getUserId = () => {
 
 export const useGame = (
   roomId: string | null,
-  options: { asBoard?: boolean; onGameReset?: () => void } = {},
+  options: {
+    asBoard?: boolean;
+    onGameReset?: () => void;
+    switchUserId?: string;
+  } = {},
 ) => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,13 +60,23 @@ export const useGame = (
         const onConnect = () => {
           if (isMounted) {
             setIsConnected(true);
-            setPlayerId(userIdRef.current);
-            currentSocket?.emit(EVENTS.JOIN_ROOM, {
-              roomId,
-              asBoard: options.asBoard,
-              userId: userIdRef.current,
-              name: userName,
-            });
+
+            // If switchUserId is provided, use SWITCH_DEVICE instead of JOIN_ROOM
+            if (options.switchUserId) {
+              setPlayerId(options.switchUserId);
+              currentSocket?.emit(EVENTS.SWITCH_DEVICE, {
+                roomId,
+                targetUserId: options.switchUserId,
+              });
+            } else {
+              setPlayerId(userIdRef.current);
+              currentSocket?.emit(EVENTS.JOIN_ROOM, {
+                roomId,
+                asBoard: options.asBoard,
+                userId: userIdRef.current,
+                name: userName,
+              });
+            }
           }
         };
 
@@ -129,7 +143,7 @@ export const useGame = (
         currentSocket.disconnect();
       }
     };
-  }, [roomId, options.asBoard]);
+  }, [roomId, options.asBoard, options.switchUserId]);
 
   const startGame = () => {
     socketRef.current?.emit(EVENTS.START_GAME, { roomId });
