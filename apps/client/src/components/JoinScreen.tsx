@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useRoomInfo } from "../hooks/useRoomInfo";
 import { getSocket } from "../infrastructure/socket";
@@ -79,16 +79,22 @@ export function JoinScreen({ onJoin }: JoinScreenProps) {
   }, [roomInfo]);
 
   // 名前のデフォルト値を生成（既存プレイヤー名と重複しない）
+  // ステップがplayerSelectionに変わったときのみ初期化（ユーザーが削除した場合は再設定しない）
+  const nameInitializedRef = useRef(false);
   useEffect(() => {
-    if (step === "playerSelection" && !name) {
+    if (step === "playerSelection" && !nameInitializedRef.current) {
       const savedName = localStorage.getItem("galaxore_player_name");
       if (savedName && !existingPlayerNames.includes(savedName)) {
         setName(savedName);
       } else {
         setName(getRandomPlanetName(existingPlayerNames));
       }
+      nameInitializedRef.current = true;
+    } else if (step !== "playerSelection") {
+      // ステップが変わったらリセット
+      nameInitializedRef.current = false;
     }
-  }, [step, existingPlayerNames, name]);
+  }, [step, existingPlayerNames]);
 
   // ゲーム開始済みの場合の処理
   useEffect(() => {
