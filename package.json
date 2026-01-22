@@ -1,6 +1,7 @@
 {
   "name": "galaxore-root",
   "private": true,
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "pnpm --filter @galaxore/shared run build && pnpm -r --parallel --if-present run dev",
     "build": "pnpm -r run build",
