@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --filter @galaxore/shared run build && pnpm -r --parallel --if-present run dev",
     "build": "pnpm -r run build",
+    "heroku-build": "pnpm --filter @galaxore/shared run build && pnpm --filter @galaxore/server run build",
     "test": "pnpm -r run test"
   },
   "devDependencies": {
